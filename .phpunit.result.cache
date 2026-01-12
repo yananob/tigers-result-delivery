@@ -1,0 +1,1 @@
+{"version":2,"defects":{"Tests\\NpbScraperTest::testFindGameNodeSuccessfully":8,"Tests\\NpbScraperTest::testFindGameNodeForNonExistentGame":8,"Tests\\NpbScraperTest::testGetScoreLink":8},"times":[]}
