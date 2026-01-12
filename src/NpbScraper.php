@@ -1,5 +1,7 @@
 <?php
 
+namespace App;
+
 use DOMDocument;
 use DOMXPath;
 use DOMNode;

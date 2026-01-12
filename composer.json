@@ -1,9 +1,33 @@
 {
+    "name": "yananob/tigers-result-delivery",
+    "description": "yananob/tigers-result-delivery",
+    "license": "proprietary",
     "require": {
+        "php": ">= 8.2",
+        "google/cloud-functions-framework": "^1.3",
+        "guzzlehttp/guzzle": "^7.8",
+        "nesbot/carbon": "^3.8",
         "paquettg/php-html-parser": "^3.1",
-        "openai-php/client": "^0.18.0"
+        "openai-php/client": "^0.18.0",
+        "http-interop/http-factory-guzzle": "^1.2"
     },
     "require-dev": {
-        "phpunit/phpunit": "^12.5"
+        "phpunit/phpunit": "^11.5",
+        "phpstan/phpstan": "^1.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "MyApp\\": "./src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "MyTest\\": "./tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
     }
 }
