@@ -28,15 +28,19 @@ class NpbGameResultService
     }
 
     /**
-     * URL から HTML を取得し、指定された日付とチーム名のゲーム結果を返す
+     * 指定された日付とチーム名のゲーム結果を返す
      *
-     * @param string $url ゲーム情報を含む HTML ページの URL
+     * @param int $year 年
+     * @param int $month 月
      * @param string $target_date 検索対象の試合日（M/D 形式）
      * @param string $team_name 検索対象のチーム名
      * @return GameResult|null ゲーム結果、見つからない場合は null
      */
-    public function fetchGameResult(string $url, string $target_date, string $team_name): ?GameResult
+    public function fetchGameResult(int $year, int $month, string $target_date, string $team_name): ?GameResult
     {
+        // URL を構築
+        $url = $this->buildScheduleUrl($year, $month);
+
         // URL から HTML を取得
         $html = @file_get_contents($url);
         if ($html === false) {

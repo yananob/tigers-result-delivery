@@ -21,9 +21,7 @@ function main_event(CloudEvent $cloudevent): void
     $today = date('n/j'); // '6/29' のような形式
 
     $service = new NpbGameResultService();
-    $url = $service->buildScheduleUrl($year, $month);
-
-    $gameResult = $service->fetchGameResult($url, $today, '阪神');
+    $gameResult = $service->fetchGameResult($year, $month, $today, '阪神');
 
     if (!$gameResult) {
         // 試合が見つからない場合はログに記録し、通知なし
