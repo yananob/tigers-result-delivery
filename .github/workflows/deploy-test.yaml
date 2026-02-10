@@ -32,6 +32,7 @@ jobs:
       secrets_project_id: 'nobu5-393106'
       secrets_config: |-
         LINE_TOKENS_N_TARGETS
+        FIREBASE_SERVICE_ACCOUNT
       # gcs_source_dir: ./public/
       # gcs_bucket_name: tigers-result-delivery-static
       # gcs_bucket_path: test

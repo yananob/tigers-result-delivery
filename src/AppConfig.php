@@ -24,6 +24,20 @@ class AppConfig
     }
 
     /**
+     * Firestoreのルートコレクション名を取得します。
+     *
+     * @return string Firestoreコレクションの名前。
+     */
+    public static function getFirestoreRootCollection(): string
+    {
+        return match (self::getEnvironment()) {
+            'production' => 'tigers-result-delivery',
+            'test' => 'tigers-result-delivery-test',
+            default => 'tigers-result-delivery-test',
+        };
+    }
+
+    /**
      * LINEメッセージ配信のターゲットとなるユーザー/グループIDを取得します。
      *
      * @return string LINEターゲットID。
