@@ -50,10 +50,11 @@ class LineNotificationService
      * ゲーム結果を LINE メッセージとして送信する
      *
      * @param GameResult $result ゲーム結果
+     * @return bool 送信成功時 true、失敗時 false
      * @throws \RuntimeException LINE API への送信に失敗した場合
      * @throws GuzzleException HTTP リクエストエラー時
      */
-    public function sendGameResult(GameResult $result): void
+    public function sendGameResult(GameResult $result): bool
     {
         $this->logger->info('LINE 通知を送信開始', [
             'date' => $result->getDate(),
@@ -91,6 +92,7 @@ class LineNotificationService
             }
 
             $this->logger->info('LINE 通知送信完了', ['statusCode' => $response->getStatusCode()]);
+            return true;
         } catch (GuzzleException $e) {
             $this->logger->error('LINE API リクエスト中にエラーが発生', [
                 'error' => $e->getMessage(),

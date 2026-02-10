@@ -5,6 +5,7 @@ require_once 'vendor/autoload.php';
 use Google\CloudFunctions\CloudEvent;
 use App\NpbGameResultService;
 use App\LineNotificationService;
+use App\NotificationHistoryService;
 use App\LoggerFactory;
 use Carbon\Carbon;
 
@@ -60,6 +61,16 @@ function main_event(CloudEvent $cloudevent): void
             return;
         }
 
+        // 通知済みチェック
+        $historyService = new NotificationHistoryService();
+        $dateString = $now->format('Y-m-d');
+        if ($historyService->isNotified($dateString)) {
+            $logger->info('既に LINE 通知済みのため処理を終了します', [
+                'date' => $dateString,
+            ]);
+            return;
+        }
+
         $service = new NpbGameResultService();
         $gameResult = $service->fetchGameResult($year, $month, $today, '阪神');
 
@@ -82,7 +93,12 @@ function main_event(CloudEvent $cloudevent): void
         // LINE で通知
         $logger->info('LINE 通知を送信します');
         $lineService = new LineNotificationService();
-        $lineService->sendGameResult($gameResult);
+        $sendResult = $lineService->sendGameResult($gameResult);
+
+        // LINE 送信成功時に、通知済み状態を Firestore に記録
+        if ($sendResult) {
+            $historyService->recordNotification($dateString, $now);
+        }
 
         $logger->info('処理を完了しました');
     } catch (\Exception $e) {
