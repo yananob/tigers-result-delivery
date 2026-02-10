@@ -2,72 +2,98 @@
 
 require_once 'vendor/autoload.php';
 
-use PHPHtmlParser\Dom;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use App\NpbScraper;
 
-function main($event, $context)
+/**
+ * Cloud Functionsのエントリーポイント
+ *
+ * HTTP エンドポイントとして動作し、本日の阪神の試合情報を取得します
+ *
+ * @param Request $request HTTPリクエスト
+ * @return Response HTTPレスポンス
+ */
+function handleTigersGame(Request $request): Response
 {
-    echo "処理を開始します\n";
-
     $year = date('Y');
     $month = date('m');
     $today = date('n/j'); // '6/29' のような形式
 
     $url = "https://npb.jp/games/{$year}/schedule_{$month}_detail.html";
-    echo "対象URL: {$url}\n";
 
-    $dom = new Dom;
-    try {
-        $dom->loadFromUrl($url);
-    } catch (Exception $e) {
-        echo 'URLの読み込みに失敗しました: ',  $e->getMessage(), "\n";
-        return 'Function failed.';
+    $scraper = new NpbScraper();
+
+    // NPB の日程ページを読み込む
+    if (!$scraper->loadFromUrl($url)) {
+        return new \GuzzleHttp\Psr7\Response(
+            500,
+            ['Content-Type' => 'application/json; charset=utf-8'],
+            json_encode(
+                ['error' => 'URLの読み込みに失敗しました'],
+                JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+            )
+        );
     }
 
-    $game_row = null;
-    $current_date = '';
+    // 本日の阪神の試合を探す
+    $game_node = $scraper->findGameNode($today, '阪神');
 
-    // 日程テーブルの全tr要素をループ
-    foreach ($dom->find('tr') as $row) {
-        // 日付が含まれるtd要素を取得
-        $date_cell = $row->findOne('td[rowspan]');
-        if ($date_cell) {
-            // "6/29（土）"のような形式から日付部分を抽出
-            $full_date_text = trim($date_cell->text);
-            if (preg_match('/^(\d+\/\d+)/', $full_date_text, $matches)) {
-                $current_date = $matches[1];
-            }
-        }
-
-        // 今日の日付の行で、「阪神」が含まれるものを探す
-        if ($current_date === $today && strpos($row->innerHtml, '阪神') !== false) {
-            $game_row = $row;
-            break;
-        }
+    if (!$game_node) {
+        return new \GuzzleHttp\Psr7\Response(
+            404,
+            ['Content-Type' => 'application/json; charset=utf-8'],
+            json_encode(
+                ['message' => '本日の阪神の試合は見つかりませんでした'],
+                JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+            )
+        );
     }
 
-    if ($game_row) {
-        echo "本日の阪神の試合情報が見つかりました。\n";
+    // 対戦相手を取得
+    $opponent = NpbScraper::getOpponentTeamName($game_node);
 
-        $score_link = $game_row->findOne('a');
-        if ($score_link) {
-            $game_url = $score_link->getAttribute('href');
-            $play_by_play_url = "https://npb.jp" . dirname($game_url) . "/playbyplay.html";
-            echo "試合詳細URL: {$play_by_play_url}\n";
+    // スコアリンクを取得
+    $score_link = NpbScraper::getScoreLink($game_node);
 
-            try {
-                $dom->loadFromUrl($play_by_play_url);
-                // ここにサマリー作成処理を追加
-            } catch (Exception $e) {
-                echo '試合詳細ページの読み込みに失敗しました: ',  $e->getMessage(), "\n";
-                return 'Function failed.';
-            }
-
-        } else {
-            echo "試合はまだ終了していません。\n";
-        }
-    } else {
-        echo "本日の阪神の試合は見つかりませんでした。\n";
+    if (!$score_link) {
+        return new \GuzzleHttp\Psr7\Response(
+            200,
+            ['Content-Type' => 'application/json; charset=utf-8'],
+            json_encode(
+                [
+                    'message' => '本日の阪神の試合情報が見つかりました',
+                    'status' => '試合はまだ終了していません',
+                    'opponent' => $opponent,
+                    'date' => $today
+                ],
+                JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+            )
+        );
     }
 
-    return 'Function finished.';
+    // 試合詳細ページへのURLを構築
+    $play_by_play_url = "https://npb.jp" . dirname($score_link) . "/playbyplay.html";
+
+    // スコア情報を取得
+    $opponent_score = NpbScraper::getOpponentScore($game_node);
+    $ally_score = NpbScraper::getAllyScore($game_node);
+
+    return new \GuzzleHttp\Psr7\Response(
+        200,
+        ['Content-Type' => 'application/json; charset=utf-8'],
+        json_encode(
+            [
+                'message' => '本日の阪神の試合情報が見つかりました',
+                'date' => $today,
+                'opponent' => $opponent,
+                'score' => [
+                    'tigers' => $ally_score,
+                    'opponent' => $opponent_score
+                ],
+                'playByPlayUrl' => $play_by_play_url
+            ],
+            JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+        )
+    );
 }

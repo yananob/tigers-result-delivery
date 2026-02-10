@@ -19,4 +19,3 @@ _backup/
 .gemini/
 # GitHub App credentials
 gha-creds-*.json
-.phpunit.result.cache
