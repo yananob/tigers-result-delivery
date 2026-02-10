@@ -18,8 +18,11 @@ class LineNotificationService
 
     public function __construct()
     {
-        $this->botToken = getenv('LINE_BOT_TOKEN');
-        $this->userId = getenv('LINE_USER_ID');
+        $botName = AppConfig::getLineDeliverTarget();
+        $lineConfig = json_decode(getenv("LINE_TOKENS_N_TARGETS"), true);
+        $this->botToken = $lineConfig["tokens"][$botName];
+        $this->userId = $lineConfig["target_ids"][$botName];
+        // $line = new Line($lineConfig["tokens"], $lineConfig["target_ids"]);
         $this->httpClient = new Client();
 
         if (!$this->botToken) {
