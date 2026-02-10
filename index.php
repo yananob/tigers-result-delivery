@@ -25,6 +25,10 @@ function main_event(CloudEvent $cloudevent): void
     ]);
 
     try {
+        // DEBUG
+        // $year = 2024;
+        // $month = 3;
+        // $today = '3/30';
         $year = (int)date('Y');
         $month = (int)date('m');
         $today = date('n/j'); // '6/29' のような形式

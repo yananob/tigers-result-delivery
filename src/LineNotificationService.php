@@ -12,7 +12,7 @@ use Monolog\Logger;
  */
 class LineNotificationService
 {
-    private const LINE_PUSH_API_URL = 'https://api.line.biz/v2/bot/message/push';
+    private const LINE_PUSH_API_URL = 'https://api.line.me/v2/bot/message/push';
     private string $botToken;
     private string $userId;
     private Client $httpClient;
@@ -114,7 +114,9 @@ class LineNotificationService
 
         $message = <<<EOT
 ＜試合終了＞
-阪神 {$allyScore} -  {$opponentScore} {$opponent}
+⚾🐅
+
+阪神 {$allyScore} - {$opponentScore} {$opponent}
 
 https://npb.jp{$result->getScoreLink()}
 EOT;
