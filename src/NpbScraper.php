@@ -15,27 +15,17 @@ class NpbScraper
         $this->html = $html;
     }
 
-    public function loadFromUrl(string $url): bool
-    {
-        $html = @file_get_contents($url);
-        if ($html === false) {
-            return false;
-        }
-        $this->html = $html;
-        return true;
-    }
-
     public function findGameNode(string $target_date, string $team_name): ?DOMNode
     {
         $doc = new DOMDocument();
         @$doc->loadHTML('<?xml encoding="UTF-8">' . $this->html);
         $xpath = new DOMXPath($doc);
 
-        $rows = $xpath->query('//table[contains(@class, "schedule_list")]//tr');
+        $rows = $xpath->query('//table//tr');
         $current_date = '';
 
         foreach ($rows as $row) {
-            $date_node = $xpath->query('./td[@rowspan]', $row)->item(0);
+            $date_node = $xpath->query('./th[@rowspan]', $row)->item(0);
             if ($date_node) {
                 $full_date_text = trim($date_node->nodeValue);
                 if (preg_match('/^(\d+\/\d+)/', $full_date_text, $matches)) {
@@ -43,7 +33,7 @@ class NpbScraper
                 }
             }
             if ($current_date === $target_date) {
-                $team_node = $xpath->query('.//div[contains(@class, "team_name") and normalize-space()="' . $team_name . '"]', $row)->item(0);
+                $team_node = $xpath->query('.//div[contains(@class, "team") and normalize-space()="' . $team_name . '"]', $row)->item(0);
                 if ($team_node) {
                     return $row;
                 }
@@ -52,14 +42,50 @@ class NpbScraper
         return null;
     }
 
-    public static function getScoreLink(DOMNode $game_node): ?string
+    public function getScoreLink(DOMNode $game_node): ?string
     {
         $doc = $game_node->ownerDocument;
         $xpath = new DOMXPath($doc);
-        $score_link_node = $xpath->query('.//td[contains(@class, "score")]/a', $game_node)->item(0);
+        $score_link_node = $xpath->query('.//a[@href]', $game_node)->item(0);
 
-        if ($score_link_node) {
+        if ($score_link_node instanceof \DOMElement) {
             return $score_link_node->getAttribute('href');
+        }
+        return null;
+    }
+
+    public function getOpponentTeamName(DOMNode $game_node): ?string
+    {
+        $doc = $game_node->ownerDocument;
+        $xpath = new DOMXPath($doc);
+        $opponent_node = $xpath->query('.//div[contains(@class, "team1")]', $game_node)->item(0);
+
+        if ($opponent_node) {
+            return trim($opponent_node->nodeValue);
+        }
+        return null;
+    }
+
+    public function getOpponentScore(DOMNode $game_node): ?string
+    {
+        $doc = $game_node->ownerDocument;
+        $xpath = new DOMXPath($doc);
+        $score_node = $xpath->query('.//div[contains(@class, "score1")]', $game_node)->item(0);
+
+        if ($score_node) {
+            return trim($score_node->nodeValue);
+        }
+        return null;
+    }
+
+    public function getAllyScore(DOMNode $game_node): ?string
+    {
+        $doc = $game_node->ownerDocument;
+        $xpath = new DOMXPath($doc);
+        $score_node = $xpath->query('.//div[contains(@class, "score2")]', $game_node)->item(0);
+
+        if ($score_node) {
+            return trim($score_node->nodeValue);
         }
         return null;
     }

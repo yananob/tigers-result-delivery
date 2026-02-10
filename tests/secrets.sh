@@ -1,4 +1,4 @@
 #!/bin/bash
 set -eu
 
-SECRETS=("KEY1" "KEY2")
+SECRETS=("LINE_TOKENS_N_TARGETS")

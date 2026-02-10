@@ -2,72 +2,65 @@
 
 require_once 'vendor/autoload.php';
 
-use PHPHtmlParser\Dom;
+use Google\CloudFunctions\CloudEvent;
+use App\NpbGameResultService;
+use App\LineNotificationService;
+use App\LoggerFactory;
 
-function main($event, $context)
+/**
+ * Cloud Functionsのエントリーポイント
+ *
+ * Pub/Sub イベントをトリガーとして、本日の阪神の試合情報を取得し LINE で通知します
+ *
+ * @param CloudEvent $cloudevent CloudEvents イベント
+ * @throws \Exception 処理に失敗した場合
+ */
+function main_event(CloudEvent $cloudevent): void
 {
-    echo "処理を開始します\n";
+    $logger = LoggerFactory::getLogger();
 
-    $year = date('Y');
-    $month = date('m');
-    $today = date('n/j'); // '6/29' のような形式
+    $logger->info('処理を開始', [
+        'eventTime' => $cloudevent->getTime(),
+        'eventId' => $cloudevent->getId(),
+    ]);
 
-    $url = "https://npb.jp/games/{$year}/schedule_{$month}_detail.html";
-    echo "対象URL: {$url}\n";
-
-    $dom = new Dom;
     try {
-        $dom->loadFromUrl($url);
-    } catch (Exception $e) {
-        echo 'URLの読み込みに失敗しました: ',  $e->getMessage(), "\n";
-        return 'Function failed.';
-    }
+        // DEBUG
+        // $year = 2024;
+        // $month = 3;
+        // $today = '3/30';
+        $year = (int)date('Y');
+        $month = (int)date('m');
+        $today = date('n/j'); // '6/29' のような形式
 
-    $game_row = null;
-    $current_date = '';
+        $logger->debug('本日の日付を取得', [
+            'year' => $year,
+            'month' => $month,
+            'today' => $today,
+        ]);
 
-    // 日程テーブルの全tr要素をループ
-    foreach ($dom->find('tr') as $row) {
-        // 日付が含まれるtd要素を取得
-        $date_cell = $row->findOne('td[rowspan]');
-        if ($date_cell) {
-            // "6/29（土）"のような形式から日付部分を抽出
-            $full_date_text = trim($date_cell->text);
-            if (preg_match('/^(\d+\/\d+)/', $full_date_text, $matches)) {
-                $current_date = $matches[1];
-            }
+        $service = new NpbGameResultService();
+        $gameResult = $service->fetchGameResult($year, $month, $today, '阪神');
+
+        if (!$gameResult) {
+            // 試合が見つからない場合はログに記録し、通知なし
+            $logger->info('本日の阪神の試合は見つかりませんでした');
+            return;
         }
 
-        // 今日の日付の行で、「阪神」が含まれるものを探す
-        if ($current_date === $today && strpos($row->innerHtml, '阪神') !== false) {
-            $game_row = $row;
-            break;
-        }
+        // LINE で通知
+        $logger->info('LINE 通知を送信します');
+        $lineService = new LineNotificationService();
+        $lineService->sendGameResult($gameResult);
+
+        $logger->info('処理を完了しました');
+    } catch (\Exception $e) {
+        $logger->error('処理中にエラーが発生しました', [
+            'error' => $e->getMessage(),
+            'code' => $e->getCode(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ]);
+        throw $e;
     }
-
-    if ($game_row) {
-        echo "本日の阪神の試合情報が見つかりました。\n";
-
-        $score_link = $game_row->findOne('a');
-        if ($score_link) {
-            $game_url = $score_link->getAttribute('href');
-            $play_by_play_url = "https://npb.jp" . dirname($game_url) . "/playbyplay.html";
-            echo "試合詳細URL: {$play_by_play_url}\n";
-
-            try {
-                $dom->loadFromUrl($play_by_play_url);
-                // ここにサマリー作成処理を追加
-            } catch (Exception $e) {
-                echo '試合詳細ページの読み込みに失敗しました: ',  $e->getMessage(), "\n";
-                return 'Function failed.';
-            }
-
-        } else {
-            echo "試合はまだ終了していません。\n";
-        }
-    } else {
-        echo "本日の阪神の試合は見つかりませんでした。\n";
-    }
-
-    return 'Function finished.';
 }

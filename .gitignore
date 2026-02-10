@@ -1,12 +1,21 @@
-configs/*.json
-configs/*.json.bak
+config.json
+**/configs/*.json
+**/configs/*.json.bak
 
 tmp/
 _deploy/
 
-# for PHP
-cache/
-templates_c/
-vendor/
+# for Python
+*.pyc
+venv*/
+_backup/
 
-*_tokens.md
+# for PHP
+**/cache/
+**/templates_c/
+**/vendor/
+
+# gemini-cli settings
+.gemini/
+# GitHub App credentials
+gha-creds-*.json
