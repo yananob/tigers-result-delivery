@@ -25,14 +25,16 @@ jobs:
       wip_provider_name: 'github-provider'
       secrets_project_id: 'nobu5-393106'
       secrets_config: |-
-        SECRET_KEYS
+        LINE_TOKENS_N_TARGETS
       # gcs_source_dir: ./public/
       # gcs_bucket_name: tigers-result-delivery-static
       # gcs_bucket_path: 
       # disable_gcs_cache: true
-      deploy_http_trigger: true
+      deploy_http_trigger: false
       deploy_event_trigger: true
       http_max_instance_count: 1
       memory: '256M'
       http_timeout: '5m'
       event_timeout: '20m'
+      environment_variables: |-
+        APP_ENV=production
