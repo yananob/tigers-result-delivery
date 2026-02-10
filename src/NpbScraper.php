@@ -15,16 +15,6 @@ class NpbScraper
         $this->html = $html;
     }
 
-    public function loadFromUrl(string $url): bool
-    {
-        $html = @file_get_contents($url);
-        if ($html === false) {
-            return false;
-        }
-        $this->html = $html;
-        return true;
-    }
-
     public function findGameNode(string $target_date, string $team_name): ?DOMNode
     {
         $doc = new DOMDocument();
@@ -52,7 +42,7 @@ class NpbScraper
         return null;
     }
 
-    public static function getScoreLink(DOMNode $game_node): ?string
+    public function getScoreLink(DOMNode $game_node): ?string
     {
         $doc = $game_node->ownerDocument;
         $xpath = new DOMXPath($doc);
@@ -64,7 +54,7 @@ class NpbScraper
         return null;
     }
 
-    public static function getOpponentTeamName(DOMNode $game_node): ?string
+    public function getOpponentTeamName(DOMNode $game_node): ?string
     {
         $doc = $game_node->ownerDocument;
         $xpath = new DOMXPath($doc);
@@ -76,7 +66,7 @@ class NpbScraper
         return null;
     }
 
-    public static function getOpponentScore(DOMNode $game_node): ?string
+    public function getOpponentScore(DOMNode $game_node): ?string
     {
         $doc = $game_node->ownerDocument;
         $xpath = new DOMXPath($doc);
@@ -88,7 +78,7 @@ class NpbScraper
         return null;
     }
 
-    public static function getAllyScore(DOMNode $game_node): ?string
+    public function getAllyScore(DOMNode $game_node): ?string
     {
         $doc = $game_node->ownerDocument;
         $xpath = new DOMXPath($doc);
