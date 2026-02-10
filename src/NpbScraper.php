@@ -63,4 +63,40 @@ class NpbScraper
         }
         return null;
     }
+
+    public static function getOpponentTeamName(DOMNode $game_node): ?string
+    {
+        $doc = $game_node->ownerDocument;
+        $xpath = new DOMXPath($doc);
+        $opponent_node = $xpath->query('.//div[contains(@class, "team1")]', $game_node)->item(0);
+
+        if ($opponent_node) {
+            return trim($opponent_node->nodeValue);
+        }
+        return null;
+    }
+
+    public static function getOpponentScore(DOMNode $game_node): ?string
+    {
+        $doc = $game_node->ownerDocument;
+        $xpath = new DOMXPath($doc);
+        $score_node = $xpath->query('.//div[contains(@class, "score1")]', $game_node)->item(0);
+
+        if ($score_node) {
+            return trim($score_node->nodeValue);
+        }
+        return null;
+    }
+
+    public static function getAllyScore(DOMNode $game_node): ?string
+    {
+        $doc = $game_node->ownerDocument;
+        $xpath = new DOMXPath($doc);
+        $score_node = $xpath->query('.//div[contains(@class, "score2")]', $game_node)->item(0);
+
+        if ($score_node) {
+            return trim($score_node->nodeValue);
+        }
+        return null;
+    }
 }
