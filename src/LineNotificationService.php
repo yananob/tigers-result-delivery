@@ -82,12 +82,13 @@ class LineNotificationService
         $opponentScore = $result->getOpponentScore();
         $opponent = $result->getOpponent();
 
-        // スコアがない場合（試合中）
-        if ($allyScore === null || $opponentScore === null) {
-            return "本日の阪神の試合：対戦相手: {$opponent}";
-        }
+        $message = <<<EOT
+＜試合終了＞
+阪神 {$allyScore} -  {$opponentScore} {$opponent}
 
-        // 試合終了
-        return "本日の阪神の試合：対戦相手: {$opponent}、スコア：阪神{$allyScore} - {$opponentScore}";
+https://npb.jp{$result->getScoreLink()}
+EOT;
+
+        return $message;
     }
 }
