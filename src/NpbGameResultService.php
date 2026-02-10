@@ -16,6 +16,18 @@ class NpbGameResultService
     }
 
     /**
+     * スケジュール URL を構築する
+     *
+     * @param int $year 年
+     * @param int $month 月
+     * @return string スケジュール URL
+     */
+    public function buildScheduleUrl(int $year, int $month): string
+    {
+        return "https://npb.jp/games/{$year}/schedule_{$month}_detail.html";
+    }
+
+    /**
      * URL から HTML を取得し、指定された日付とチーム名のゲーム結果を返す
      *
      * @param string $url ゲーム情報を含む HTML ページの URL

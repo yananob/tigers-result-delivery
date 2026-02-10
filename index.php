@@ -2,77 +2,36 @@
 
 require_once 'vendor/autoload.php';
 
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
+use Google\CloudFunctions\CloudEvent;
 use App\NpbGameResultService;
+use App\LineNotificationService;
 
 /**
  * Cloud Functionsのエントリーポイント
  *
- * HTTP エンドポイントとして動作し、本日の阪神の試合情報を取得します
+ * Pub/Sub イベントをトリガーとして、本日の阪神の試合情報を取得し LINE で通知します
  *
- * @param Request $request HTTPリクエスト
- * @return Response HTTPレスポンス
+ * @param CloudEvent $cloudevent CloudEvents イベント
+ * @throws \Exception 処理に失敗した場合
  */
-function handleTigersGame(Request $request): Response
+function main_event(CloudEvent $cloudevent): void
 {
-    $year = date('Y');
-    $month = date('m');
+    $year = (int)date('Y');
+    $month = (int)date('m');
     $today = date('n/j'); // '6/29' のような形式
 
-    $url = "https://npb.jp/games/{$year}/schedule_{$month}_detail.html";
-
     $service = new NpbGameResultService();
+    $url = $service->buildScheduleUrl($year, $month);
+
     $gameResult = $service->fetchGameResult($url, $today, '阪神');
 
     if (!$gameResult) {
-        return new \GuzzleHttp\Psr7\Response(
-            404,
-            ['Content-Type' => 'application/json; charset=utf-8'],
-            json_encode(
-                ['message' => '本日の阪神の試合は見つかりませんでした'],
-                JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
-            )
-        );
+        // 試合が見つからない場合はログに記録し、通知なし
+        error_log('本日の阪神の試合は見つかりませんでした');
+        return;
     }
 
-    // スコアリンクを取得
-    $score_link = $gameResult->getScoreLink();
-
-    if (!$score_link) {
-        return new \GuzzleHttp\Psr7\Response(
-            200,
-            ['Content-Type' => 'application/json; charset=utf-8'],
-            json_encode(
-                [
-                    'message' => '本日の阪神の試合情報が見つかりました',
-                    'status' => '試合はまだ終了していません',
-                    'opponent' => $gameResult->getOpponent(),
-                    'date' => $today
-                ],
-                JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
-            )
-        );
-    }
-
-    // 試合詳細ページへのURLを構築
-    $play_by_play_url = "https://npb.jp" . dirname($score_link) . "/playbyplay.html";
-
-    return new \GuzzleHttp\Psr7\Response(
-        200,
-        ['Content-Type' => 'application/json; charset=utf-8'],
-        json_encode(
-            [
-                'message' => '本日の阪神の試合情報が見つかりました',
-                'date' => $today,
-                'opponent' => $gameResult->getOpponent(),
-                'score' => [
-                    'tigers' => $gameResult->getAllyScore(),
-                    'opponent' => $gameResult->getOpponentScore()
-                ],
-                'playByPlayUrl' => $play_by_play_url
-            ],
-            JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
-        )
-    );
+    // LINE で通知
+    $lineService = new LineNotificationService();
+    $lineService->sendGameResult($gameResult);
 }
