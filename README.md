@@ -1,40 +1,56 @@
+# Tigers Result Delivery
+
+阪神タイガースの試合結果を自動で取得し、LINE に通知する Cloud Functions アプリケーションです。
 
 ## 機能概要
 
-### LINE 重複送信防止
+### 主な機能
 
-試合結果を LINE 通知した際に、Firestore に「通知済み」状態を記録し、重複送信を防ぎます。
+1. **試合結果の自動取得**
+   - NPB 公式サイトをスクレイピングし、当日の阪神タイガースの試合結果（スコア、対戦相手、試合詳細リンク）を取得します。
+   - 試合終了（スコア確定）を検知して動作します。
 
-**処理フロー：**
-1. 季節チェック（3/15～10/31）
-2. 時間チェック（14:00～23:59）
-3. **通知済みチェック** ← Firestore で確認
-4. 試合結果取得（NPB スクレイピング）
-5. スコア完全性チェック
-6. LINE 送信
-7. **通知履歴記録** ← Firestore に記録
+2. **LINE 通知**
+   - 試合終了後、即座に LINE 公式アカウント（Bot）を通じてユーザーに試合結果をプッシュ通知します。
+   - メッセージにはスコア、勝敗、および詳細ページへのリンクが含まれます。
 
-**Firestore 保存先：**
-- パス：`/result-delivery-test/results/results/{YYYY-MM-DD}`
-- ドキュメント内容：
+3. **重複通知の防止**
+   - Google Cloud Firestore を利用して通知状態を管理します。
+   - 一度通知した試合（日付）については、再実行されても重複して通知を行いません。
+
+### 処理フロー
+
+定期実行される Cloud Functions の処理フローは以下の通りです：
+
+1. **実行条件チェック**:
+   - シーズン中（3/15～10/31）であるかを確認します。
+   - 試合開催時間帯（14:00～23:59）であるかを確認します。
+
+2. **通知済みチェック**:
+   - Firestore を参照し、当日の試合が既に通知済みでないか確認します。
+   - 既に通知済みの場合は処理を終了します。
+
+3. **結果取得**:
+   - NPB サイトから当日の試合情報を取得します。
+
+4. **スコア確定確認**:
+   - 試合が終了し、スコアが確定しているか判定します。
+
+5. **LINE 送信**:
+   - 試合結果を整形し、LINE Messaging API 経由で送信します。
+
+6. **履歴保存**:
+   - 送信成功後、Firestore に「通知済み」フラグとタイムスタンプを保存し、次回の重複実行を防ぎます。
+
+### データ管理 (Firestore)
+
+通知履歴は以下の構成で Firestore に保存されます：
+
+- **コレクションパス**: `/tigers-result-delivery-test/results/results/{YYYY-MM-DD}`
+- **ドキュメント内容**:
   ```json
   {
     "is_notified": true,
     "timestamp": "2026-02-10T14:30:00Z"
   }
   ```
-
-### ファイル構成
-
-| ファイル | 役割 |
-|---------|------|
-| `index.php` | Cloud Functions エントリーポイント |
-| `src/GameResult.php` | 試合結果 Entity |
-| `src/NpbGameResultService.php` | NPB 試合結果取得サービス |
-| `src/NpbScraper.php` | HTML スクレイピング |
-| `src/LineNotificationService.php` | LINE 送信サービス |
-| `src/NotificationHistoryService.php` | 通知履歴管理（Firestore） |
-| `src/FirestoreClient.php` | Firestore クライアント（シングルトン） |
-| `src/AppConfig.php` | 設定管理 |
-| `src/LoggerFactory.php` | ロガー ファクトリー |
-
