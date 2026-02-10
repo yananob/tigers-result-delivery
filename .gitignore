@@ -14,6 +14,7 @@ _backup/
 **/cache/
 **/templates_c/
 **/vendor/
+.phpunit.result.cache
 
 # gemini-cli settings
 .gemini/
