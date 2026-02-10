@@ -6,6 +6,7 @@ use Google\CloudFunctions\CloudEvent;
 use App\NpbGameResultService;
 use App\LineNotificationService;
 use App\LoggerFactory;
+use Carbon\Carbon;
 
 /**
  * Cloud Functionsのエントリーポイント
@@ -25,19 +26,39 @@ function main_event(CloudEvent $cloudevent): void
     ]);
 
     try {
-        $year = (int)date('Y');
-        $month = (int)date('m');
-        $today = date('n/j'); // '6/29' のような形式
-        // DEBUG
-        $year = 2026;
-        $month = 3;
-        $today = '3/29';
+        // 日本時間での現在日時を取得
+        $now = Carbon::now('Asia/Tokyo');
+        $year = $now->year;
+        $month = $now->month;
+        $today = $now->format('n/j'); // '6/29' のような形式
 
         $logger->debug('本日の日付を取得', [
             'year' => $year,
             'month' => $month,
             'today' => $today,
         ]);
+
+        // 季節チェック：3月15日～10月31日
+        $startDate = Carbon::create($year, 3, 15, 0, 0, 0, 'Asia/Tokyo');
+        $endDate = Carbon::create($year, 10, 31, 23, 59, 59, 'Asia/Tokyo');
+
+        if (!$now->isBetween($startDate, $endDate)) {
+            $logger->info('季節外のため処理を終了します', [
+                'now' => $now->format('Y-m-d H:i:s'),
+                'season' => "3月15日～10月31日",
+            ]);
+            return;
+        }
+
+        // 時間チェック：14:00～23:59（日本時間）
+        $hour = $now->hour;
+        if ($hour < 14) {
+            $logger->info('時間外のため処理を終了します', [
+                'now' => $now->format('Y-m-d H:i:s'),
+                'operatingHours' => '14:00～23:59',
+            ]);
+            return;
+        }
 
         $service = new NpbGameResultService();
         $gameResult = $service->fetchGameResult($year, $month, $today, '阪神');
