@@ -25,13 +25,13 @@ function main_event(CloudEvent $cloudevent): void
     ]);
 
     try {
-        // DEBUG
-        // $year = 2024;
-        // $month = 3;
-        // $today = '3/30';
         $year = (int)date('Y');
         $month = (int)date('m');
         $today = date('n/j'); // '6/29' のような形式
+        // DEBUG
+        $year = 2026;
+        $month = 3;
+        $today = '3/29';
 
         $logger->debug('本日の日付を取得', [
             'year' => $year,
@@ -45,6 +45,16 @@ function main_event(CloudEvent $cloudevent): void
         if (!$gameResult) {
             // 試合が見つからない場合はログに記録し、通知なし
             $logger->info('本日の阪神の試合は見つかりませんでした');
+            return;
+        }
+
+        // スコアの完全性をチェック
+        // 試合が終わっていれば、敵・味方両方のスコアが取得できるはず
+        if ($gameResult->getAllyScore() === null || $gameResult->getOpponentScore() === null) {
+            $logger->info('試合はまだ終わっていません', [
+                'allyScore' => $gameResult->getAllyScore(),
+                'opponentScore' => $gameResult->getOpponentScore(),
+            ]);
             return;
         }
 
