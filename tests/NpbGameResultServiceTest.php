@@ -29,7 +29,7 @@ class NpbGameResultServiceTest extends TestCase
         $url = $this->service->buildScheduleUrl(2024, 3);
 
         $this->assertEquals(
-            'https://npb.jp/games/2024/schedule_3_detail.html',
+            'https://npb.jp/games/2024/schedule_03_detail.html',
             $url,
             "スケジュール URL が正しく構築されるべき"
         );
@@ -43,7 +43,7 @@ class NpbGameResultServiceTest extends TestCase
         $url = $this->service->buildScheduleUrl(2023, 8);
 
         $this->assertEquals(
-            'https://npb.jp/games/2023/schedule_8_detail.html',
+            'https://npb.jp/games/2023/schedule_08_detail.html',
             $url,
             "異なる年月でも正しく URL が構築されるべき"
         );
@@ -55,12 +55,12 @@ class NpbGameResultServiceTest extends TestCase
      */
     public function testFetchGameResult20240329(): void
     {
-        // 実際のスケジュール URL を取得して検証（ネットワーク未接続の場合はスキップ）
-        $url = $this->service->buildScheduleUrl(2024, 3);
-        $ctx = stream_context_create(['http' => ['timeout' => 5]]);
-        if (@file_get_contents($url, false, $ctx) === false) {
-            $this->markTestSkipped('ネットワークに接続できないため実際のURLテストをスキップします');
-        }
+        // // 実際のスケジュール URL を取得して検証（ネットワーク未接続の場合はスキップ）
+        // $url = $this->service->buildScheduleUrl(2024, 3);
+        // $ctx = stream_context_create(['http' => ['timeout' => 5]]);
+        // if (@file_get_contents($url, false, $ctx) === false) {
+        //     $this->markTestSkipped('ネットワークに接続できないため実際のURLテストをスキップします');
+        // }
 
         $result = $this->service->fetchGameResult(2024, 3, '3/29', '阪神');
 

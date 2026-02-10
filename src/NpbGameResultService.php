@@ -3,6 +3,8 @@
 namespace App;
 
 use Monolog\Logger;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 
 /**
  * NPB ゲーム結果を取得するサービス
@@ -28,7 +30,7 @@ class NpbGameResultService
      */
     public function buildScheduleUrl(int $year, int $month): string
     {
-        return "https://npb.jp/games/{$year}/schedule_{$month}_detail.html";
+        return "https://npb.jp/games/{$year}/schedule_" . str_pad((string)$month, 2, '0', STR_PAD_LEFT) . "_detail.html";
     }
 
     /**
@@ -53,13 +55,29 @@ class NpbGameResultService
         $url = $this->buildScheduleUrl($year, $month);
         $this->logger->debug('スケジュール URL を構築', ['url' => $url]);
 
-        // URL から HTML を取得
-        $html = @file_get_contents($url);
-        if ($html === false) {
-            $this->logger->warning('HTML の取得に失敗', ['url' => $url]);
+        // URL から HTML を取得（Guzzle を使用）
+        $client = new Client(['timeout' => 10]);
+        try {
+            $response = $client->request('GET', $url, [
+                'headers' => [
+                    // Android Chrome の User-Agent
+                    'User-Agent' => 'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Mobile Safari/537.36',
+                ],
+                'http_errors' => false,
+            ]);
+
+            $status = $response->getStatusCode();
+            if ($status !== 200) {
+                $this->logger->warning('HTML の取得に失敗', ['url' => $url, 'status' => $status]);
+                return null;
+            }
+
+            $html = (string)$response->getBody();
+            $this->logger->debug('HTML の取得に成功', ['url' => $url, 'size' => strlen($html)]);
+        } catch (GuzzleException $e) {
+            $this->logger->warning('HTML の取得に失敗（例外）', ['url' => $url, 'error' => $e->getMessage()]);
             return null;
         }
-        $this->logger->debug('HTML の取得に成功', ['url' => $url, 'size' => strlen($html)]);
 
         // HTML を scraper に渡す
         $this->scraper->loadHtml($html);
