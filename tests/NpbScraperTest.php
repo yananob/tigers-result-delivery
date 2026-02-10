@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use App\NpbScraper;
 use PHPUnit\Framework\TestCase;
 
 class NpbScraperTest extends TestCase
@@ -39,6 +40,42 @@ class NpbScraperTest extends TestCase
         $this->assertNotNull($gameNode);
 
         $scoreLink = NpbScraper::getScoreLink($gameNode);
-        $this->assertEquals('/scores/2024/0329/g-t-01/index.html', $scoreLink, "スコアへのリンクが正しく取得できるべき");
+        $this->assertEquals('/scores/2024/0329/g-t-01/', $scoreLink, "スコアへのリンクが正しく取得できるべき");
+    }
+
+    /**
+     * 3/29（金）の試合データをテスト
+     */
+    public function testMatch20240329(): void
+    {
+        $gameNode = $this->scraper->findGameNode('3/29', '阪神');
+        $this->assertNotNull($gameNode, "3/29の阪神の試合が見つかるべき");
+
+        $scoreLink = NpbScraper::getScoreLink($gameNode);
+        $this->assertEquals('/scores/2024/0329/g-t-01/', $scoreLink, "3/29のスコアリンクが正しい");
+    }
+
+    /**
+     * 3/30（土）の試合データをテスト
+     */
+    public function testMatch20240330(): void
+    {
+        $gameNode = $this->scraper->findGameNode('3/30', '阪神');
+        $this->assertNotNull($gameNode, "3/30の阪神の試合が見つかるべき");
+
+        $scoreLink = NpbScraper::getScoreLink($gameNode);
+        $this->assertEquals('/scores/2024/0330/g-t-02/', $scoreLink, "3/30のスコアリンクが正しい");
+    }
+
+    /**
+     * 3/31（日）の試合データをテスト
+     */
+    public function testMatch20240331(): void
+    {
+        $gameNode = $this->scraper->findGameNode('3/31', '阪神');
+        $this->assertNotNull($gameNode, "3/31の阪神の試合が見つかるべき");
+
+        $scoreLink = NpbScraper::getScoreLink($gameNode);
+        $this->assertEquals('/scores/2024/0331/g-t-03/', $scoreLink, "3/31のスコアリンクが正しい");
     }
 }
