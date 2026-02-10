@@ -21,6 +21,9 @@ function main_event(CloudEvent $cloudevent): void
 {
     $logger = LoggerFactory::getLogger();
 
+    // debug用日付
+    // Carbon::setTestNow(Carbon::create(2024, 3, 31, 15, 0, 0, 'Asia/Tokyo'));
+
     $logger->info('処理を開始', [
         'eventTime' => $cloudevent->getTime(),
         'eventId' => $cloudevent->getId(),

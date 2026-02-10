@@ -13,8 +13,6 @@ use Google\Cloud\Firestore\FirestoreClient as GoogleFirestoreClient;
 class FirestoreClient
 {
     private static ?GoogleFirestoreClient $instance = null;
-    private const PROJECT_ID = 'result-delivery-test';
-    private const DATABASE_ID = '(default)';
 
     private function __construct()
     {
@@ -29,30 +27,10 @@ class FirestoreClient
     {
         if (self::$instance === null) {
             self::$instance = new GoogleFirestoreClient([
-                'projectId' => self::PROJECT_ID,
+                "keyFile" => json_decode(getenv("FIREBASE_SERVICE_ACCOUNT"), true)
             ]);
         }
 
         return self::$instance;
-    }
-
-    /**
-     * プロジェクトID を取得
-     * 
-     * @return string プロジェクトID
-     */
-    public static function getProjectId(): string
-    {
-        return self::PROJECT_ID;
-    }
-
-    /**
-     * データベースID を取得
-     * 
-     * @return string データベースID
-     */
-    public static function getDatabaseId(): string
-    {
-        return self::DATABASE_ID;
     }
 }

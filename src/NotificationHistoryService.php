@@ -15,11 +15,15 @@ use Monolog\Logger;
 class NotificationHistoryService
 {
     private Logger $logger;
-    private const COLLECTION_PATH = 'results/results';
 
     public function __construct()
     {
         $this->logger = LoggerFactory::getLogger();
+    }
+
+    private static function getCollectionPath(): string
+    {
+        return AppConfig::getFirestoreRootCollection() . '/results/results';
     }
 
     /**
@@ -34,7 +38,7 @@ class NotificationHistoryService
 
         try {
             $firestoreClient = FirestoreClient::getInstance();
-            $documentReference = $firestoreClient->collection(self::COLLECTION_PATH)->document($date);
+            $documentReference = $firestoreClient->collection(self::getCollectionPath())->document($date);
             $documentSnapshot = $documentReference->snapshot();
 
             if (!$documentSnapshot->exists()) {
@@ -78,7 +82,7 @@ class NotificationHistoryService
 
         try {
             $firestoreClient = FirestoreClient::getInstance();
-            $documentReference = $firestoreClient->collection(self::COLLECTION_PATH)->document($date);
+            $documentReference = $firestoreClient->collection(self::getCollectionPath())->document($date);
 
             $documentReference->set([
                 'is_notified' => true,
