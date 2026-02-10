@@ -58,7 +58,7 @@ class NpbScraper
         $xpath = new DOMXPath($doc);
         $score_link_node = $xpath->query('.//td[contains(@class, "score")]/a', $game_node)->item(0);
 
-        if ($score_link_node) {
+        if ($score_link_node instanceof \DOMElement) {
             return $score_link_node->getAttribute('href');
         }
         return null;
