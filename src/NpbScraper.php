@@ -31,11 +31,11 @@ class NpbScraper
         @$doc->loadHTML('<?xml encoding="UTF-8">' . $this->html);
         $xpath = new DOMXPath($doc);
 
-        $rows = $xpath->query('//table[contains(@class, "schedule_list")]//tr');
+        $rows = $xpath->query('//table//tr');
         $current_date = '';
 
         foreach ($rows as $row) {
-            $date_node = $xpath->query('./td[@rowspan]', $row)->item(0);
+            $date_node = $xpath->query('./th[@rowspan]', $row)->item(0);
             if ($date_node) {
                 $full_date_text = trim($date_node->nodeValue);
                 if (preg_match('/^(\d+\/\d+)/', $full_date_text, $matches)) {
@@ -43,7 +43,7 @@ class NpbScraper
                 }
             }
             if ($current_date === $target_date) {
-                $team_node = $xpath->query('.//div[contains(@class, "team_name") and normalize-space()="' . $team_name . '"]', $row)->item(0);
+                $team_node = $xpath->query('.//div[contains(@class, "team") and normalize-space()="' . $team_name . '"]', $row)->item(0);
                 if ($team_node) {
                     return $row;
                 }
@@ -56,7 +56,7 @@ class NpbScraper
     {
         $doc = $game_node->ownerDocument;
         $xpath = new DOMXPath($doc);
-        $score_link_node = $xpath->query('.//td[contains(@class, "score")]/a', $game_node)->item(0);
+        $score_link_node = $xpath->query('.//a[@href]', $game_node)->item(0);
 
         if ($score_link_node instanceof \DOMElement) {
             return $score_link_node->getAttribute('href');
