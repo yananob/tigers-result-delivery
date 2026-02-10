@@ -15,13 +15,6 @@ use PHPUnit\Framework\TestCase;
 class NpbGameResultServiceTest extends TestCase
 {
     private NpbGameResultService $service;
-    private static string $html;
-
-    public static function setUpBeforeClass(): void
-    {
-        // テストフィクスチャ（HTML）を読み込み
-        self::$html = file_get_contents(__DIR__ . '/fixture/schedule_03_detail.html');
-    }
 
     protected function setUp(): void
     {
@@ -62,9 +55,14 @@ class NpbGameResultServiceTest extends TestCase
      */
     public function testFetchGameResult20240329(): void
     {
-        // テストフィクスチャを使用した統合テスト
-        // 実際のデータで検証
-        $result = $this->fetchGameResultFromFixture('3/29', '阪神');
+        // 実際のスケジュール URL を取得して検証（ネットワーク未接続の場合はスキップ）
+        $url = $this->service->buildScheduleUrl(2024, 3);
+        $ctx = stream_context_create(['http' => ['timeout' => 5]]);
+        if (@file_get_contents($url, false, $ctx) === false) {
+            $this->markTestSkipped('ネットワークに接続できないため実際のURLテストをスキップします');
+        }
+
+        $result = $this->service->fetchGameResult(2024, 3, '3/29', '阪神');
 
         $this->assertNotNull($result, "3/29の試合データが取得できるべき");
         $this->assertEquals('巨人', $result->getOpponent(), "対戦相手は巨人");
@@ -79,7 +77,13 @@ class NpbGameResultServiceTest extends TestCase
      */
     public function testFetchGameResult20240330(): void
     {
-        $result = $this->fetchGameResultFromFixture('3/30', '阪神');
+        // $url = $this->service->buildScheduleUrl(2024, 3);
+        // $ctx = stream_context_create(['http' => ['timeout' => 5]]);
+        // if (@file_get_contents($url, false, $ctx) === false) {
+        //     $this->markTestSkipped('ネットワークに接続できないため実際のURLテストをスキップします');
+        // }
+
+        $result = $this->service->fetchGameResult(2024, 3, '3/30', '阪神');
 
         $this->assertNotNull($result, "3/30の試合データが取得できるべき");
         $this->assertEquals('巨人', $result->getOpponent(), "対戦相手は巨人");
@@ -94,7 +98,13 @@ class NpbGameResultServiceTest extends TestCase
      */
     public function testFetchGameResult20240331(): void
     {
-        $result = $this->fetchGameResultFromFixture('3/31', '阪神');
+        // $url = $this->service->buildScheduleUrl(2024, 3);
+        // $ctx = stream_context_create(['http' => ['timeout' => 5]]);
+        // if (@file_get_contents($url, false, $ctx) === false) {
+        //     $this->markTestSkipped('ネットワークに接続できないため実際のURLテストをスキップします');
+        // }
+
+        $result = $this->service->fetchGameResult(2024, 3, '3/31', '阪神');
 
         $this->assertNotNull($result, "3/31の試合データが取得できるべき");
         $this->assertEquals('巨人', $result->getOpponent(), "対戦相手は巨人");
@@ -108,7 +118,13 @@ class NpbGameResultServiceTest extends TestCase
      */
     public function testFetchGameResultNotFound(): void
     {
-        $result = $this->fetchGameResultFromFixture('4/1', '阪神');
+        // $url = $this->service->buildScheduleUrl(2024, 3);
+        // $ctx = stream_context_create(['http' => ['timeout' => 5]]);
+        // if (@file_get_contents($url, false, $ctx) === false) {
+        //     $this->markTestSkipped('ネットワークに接続できないため実際のURLテストをスキップします');
+        // }
+
+        $result = $this->service->fetchGameResult(2024, 3, '4/1', '阪神');
         $this->assertNull($result, "存在しない日付の試合は null を返すべき");
     }
 
@@ -119,38 +135,7 @@ class NpbGameResultServiceTest extends TestCase
      * @param string $team チーム名
      * @return GameResult|null
      */
-    private function fetchGameResultFromFixture(string $date, string $team): ?GameResult
-    {
-        // NpbScraper を直接使用して GameResult を構築
-        $scraper = new \App\NpbScraper();
-        $scraper->loadHtml(self::$html);
-
-        $gameNode = $scraper->findGameNode($date, $team);
-        if ($gameNode === null) {
-            return null;
-        }
-
-        $opponent = $scraper->getOpponentTeamName($gameNode);
-        if ($opponent === null) {
-            return null;
-        }
-
-        $scoreLink = $scraper->getScoreLink($gameNode);
-        $allyScoreStr = $scraper->getAllyScore($gameNode);
-        $opponentScoreStr = $scraper->getOpponentScore($gameNode);
-
-        $allyScore = $allyScoreStr !== null && is_numeric($allyScoreStr) ? (int)$allyScoreStr : null;
-        $opponentScore = $opponentScoreStr !== null && is_numeric($opponentScoreStr) ? (int)$opponentScoreStr : null;
-
-        return new GameResult(
-            $date,
-            $team,
-            $opponent,
-            $scoreLink,
-            $allyScore,
-            $opponentScore
-        );
-    }
+    // 注意: 実際の URL を叩くため、ネットワーク環境によっては失敗する可能性があります。
 
     /**
      * GameResult オブジェクトが正しく作成されるかテスト
