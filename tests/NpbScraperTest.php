@@ -22,19 +22,19 @@ class NpbScraperTest extends TestCase
         $this->scraper->loadHtml(self::$html);
     }
 
-    public function testFindGameNodeSuccessfully(): void
+    public function test指定日の試合情報が見つかること(): void
     {
         $gameNode = $this->scraper->findGameNode('3/29', '阪神');
         $this->assertNotNull($gameNode, "3/29の阪神の試合が見つかるべき");
     }
 
-    public function testFindGameNodeForNonExistentGame(): void
+    public function test存在しない試合は見つからないこと(): void
     {
         $gameNode = $this->scraper->findGameNode('3/29', '存在しないチーム');
         $this->assertNull($gameNode, "存在しないチームの試合は見つからないはず");
     }
 
-    public function testGetScoreLink(): void
+    public function testスコアへのリンクが正しく取得できること(): void
     {
         $gameNode = $this->scraper->findGameNode('3/29', '阪神');
         $this->assertNotNull($gameNode);
@@ -46,7 +46,7 @@ class NpbScraperTest extends TestCase
     /**
      * 3/29（金）の試合データをテスト
      */
-    public function testMatch20240329(): void
+    public function test2024年3月29日の試合データが正しく取得できること(): void
     {
         $gameNode = $this->scraper->findGameNode('3/29', '阪神');
         $this->assertNotNull($gameNode, "3/29の阪神の試合が見つかるべき");
@@ -67,7 +67,7 @@ class NpbScraperTest extends TestCase
     /**
      * 3/30（土）の試合データをテスト
      */
-    public function testMatch20240330(): void
+    public function test2024年3月30日の試合データが正しく取得できること(): void
     {
         $gameNode = $this->scraper->findGameNode('3/30', '阪神');
         $this->assertNotNull($gameNode, "3/30の阪神の試合が見つかるべき");
@@ -88,7 +88,7 @@ class NpbScraperTest extends TestCase
     /**
      * 3/31（日）の試合データをテスト
      */
-    public function testMatch20240331(): void
+    public function test2024年3月31日の試合データが正しく取得できること(): void
     {
         $gameNode = $this->scraper->findGameNode('3/31', '阪神');
         $this->assertNotNull($gameNode, "3/31の阪神の試合が見つかるべき");
