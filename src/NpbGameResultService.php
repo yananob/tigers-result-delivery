@@ -30,7 +30,7 @@ class NpbGameResultService
      */
     public function buildScheduleUrl(int $year, int $month): string
     {
-        return "https://npb.jp/games/{$year}/schedule_" . str_pad((string)$month, 2, '0', STR_PAD_LEFT) . "_detail.html";
+        return "https://npb.jp/games/{$year}/";
     }
 
     /**
