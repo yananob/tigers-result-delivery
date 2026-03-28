@@ -11,4 +11,3 @@ echo "Running PHPUnit..."
 ./vendor/bin/phpunit --testdox
 
 source ./_cf-common/test/unset_secrets.sh ${SECRETS[*]}
-
