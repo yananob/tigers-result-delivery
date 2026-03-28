@@ -4,7 +4,10 @@ namespace Tests;
 
 use App\GameResult;
 use App\NpbGameResultService;
-use PHPUnit\Framework\MockObject\MockObject;
+use GuzzleHttp\Client;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -12,19 +15,13 @@ use PHPUnit\Framework\TestCase;
  */
 class NpbGameResultServiceTest extends TestCase
 {
-    private NpbGameResultService $service;
-
-    protected function setUp(): void
-    {
-        $this->service = new NpbGameResultService();
-    }
-
     /**
      * スケジュール URL の構築をテスト
      */
     public function testBuildScheduleUrlWithValidParams(): void
     {
-        $url = $this->service->buildScheduleUrl(2026, 3);
+        $service = new NpbGameResultService();
+        $url = $service->buildScheduleUrl(2026, 3);
 
         $this->assertEquals(
             'https://npb.jp/games/2026/',
@@ -39,21 +36,18 @@ class NpbGameResultServiceTest extends TestCase
      */
     public function testFetchGameResult20260327(): void
     {
-        // 外部への通信が発生するが、テスト環境では tests/fixture/2026.html が返るように
-        // Client がモック化されていないため、本来は Http モックが必要だが
-        // 現状のテストコードは実際の fetchGameResult を呼んでいる。
-        // NpbGameResultService 内で Guzzle Client が new されているため、
-        // 外部通信が発生してしまう。
-        // ただし、この環境では外部通信が可能かもしれないし、
-        // もしくは tests/fixture を使った別のテスト方法があるかもしれない。
-        // 既存の NpbGameResultServiceTest.php も NpbGameResultService を new して
-        // fetchGameResult を呼んでいたので、同様にする。
+        // フィクスチャを読み込む
+        $html = file_get_contents(__DIR__ . '/fixture/2026.html');
 
-        $result = $this->service->fetchGameResult(2026, 3, '3/27', '阪神');
+        // Guzzle のモックを作成
+        $mock = new MockHandler([
+            new Response(200, [], $html),
+        ]);
+        $handlerStack = HandlerStack::create($mock);
+        $client = new Client(['handler' => $handlerStack]);
 
-        if ($result === null) {
-            $this->markTestSkipped('外部通信に失敗したか、データが見つかりません');
-        }
+        $service = new NpbGameResultService($client);
+        $result = $service->fetchGameResult(2026, 3, '3/27', '阪神');
 
         $this->assertNotNull($result, "3/27の試合データが取得できるべき");
         $this->assertEquals('読売ジャイアンツ', $result->getOpponent(), "対戦相手は読売ジャイアンツ");
@@ -67,7 +61,18 @@ class NpbGameResultServiceTest extends TestCase
      */
     public function testFetchGameResultNotFound(): void
     {
-        $result = $this->service->fetchGameResult(2026, 3, '4/1', '阪神');
+        // フィクスチャを読み込む
+        $html = file_get_contents(__DIR__ . '/fixture/2026.html');
+
+        // Guzzle のモックを作成
+        $mock = new MockHandler([
+            new Response(200, [], $html),
+        ]);
+        $handlerStack = HandlerStack::create($mock);
+        $client = new Client(['handler' => $handlerStack]);
+
+        $service = new NpbGameResultService($client);
+        $result = $service->fetchGameResult(2026, 3, '4/1', '阪神');
         $this->assertNull($result, "存在しない日付の試合は null を返すべき");
     }
 
