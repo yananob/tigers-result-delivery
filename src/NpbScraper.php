@@ -21,26 +21,7 @@ class NpbScraper
         @$doc->loadHTML('<?xml encoding="UTF-8">' . $this->html);
         $xpath = new DOMXPath($doc);
 
-        // まず、従来のカレンダー詳細ページ形式（schedule_03_detail.html）を試みる
-        $rows = $xpath->query('//table//tr');
-        $current_date = '';
-        foreach ($rows as $row) {
-            $date_node = $xpath->query('./th[@rowspan]', $row)->item(0);
-            if ($date_node) {
-                $full_date_text = trim($date_node->nodeValue);
-                if (preg_match('/^(\d+\/\d+)/', $full_date_text, $matches)) {
-                    $current_date = $matches[1];
-                }
-            }
-            if ($current_date === $target_date) {
-                $team_node = $xpath->query('.//div[contains(@class, "team") and contains(normalize-space(), "' . $team_name . '")]', $row)->item(0);
-                if ($team_node) {
-                    return $row;
-                }
-            }
-        }
-
-        // 次に、2026.html のようなメインページ形式を試みる
+        // 2026.html のようなメインページ形式を試みる
         // 日付は <h5>3月27日（金）</h5> のような形式
         $date_headers = $xpath->query('//h5');
         foreach ($date_headers as $header) {
@@ -104,12 +85,6 @@ class NpbScraper
         $doc = $game_node->ownerDocument;
         $xpath = new DOMXPath($doc);
 
-        // 従来形式
-        $opponent_node = $xpath->query('.//div[contains(@class, "team1")]', $game_node)->item(0);
-        if ($opponent_node) {
-            return trim($opponent_node->nodeValue);
-        }
-
         // 2026.html 形式
         $team1_node = $xpath->query('.//td[contains(@class, "team1")]', $game_node)->item(0);
         if ($team1_node) {
@@ -128,12 +103,6 @@ class NpbScraper
         $doc = $game_node->ownerDocument;
         $xpath = new DOMXPath($doc);
 
-        // 従来形式
-        $score_node = $xpath->query('.//div[contains(@class, "score1")]', $game_node)->item(0);
-        if ($score_node) {
-            return trim($score_node->nodeValue);
-        }
-
         // 2026.html 形式
         $scores = $xpath->query('.//td[contains(@class, "score")]', $game_node);
         if ($scores->length >= 1) {
@@ -147,12 +116,6 @@ class NpbScraper
     {
         $doc = $game_node->ownerDocument;
         $xpath = new DOMXPath($doc);
-
-        // 従来形式
-        $score_node = $xpath->query('.//div[contains(@class, "score2")]', $game_node)->item(0);
-        if ($score_node) {
-            return trim($score_node->nodeValue);
-        }
 
         // 2026.html 形式
         $scores = $xpath->query('.//td[contains(@class, "score")]', $game_node);
