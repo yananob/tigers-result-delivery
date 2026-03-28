@@ -86,30 +86,30 @@ class NpbGameResultService
         // 試合ノードを検索
         $game_node = $this->scraper->findGameNode($target_date, $team_name);
         if ($game_node === null) {
-            $this->logger->info('試合ノードが見つかりません', [
+            $this->logger->info('指定された日付とチームの試合が見つかりませんでした', [
                 'date' => $target_date,
                 'team' => $team_name,
             ]);
             return null;
         }
-        $this->logger->debug('試合ノードを検出');
+        $this->logger->info('対象の試合ノードを検出しました');
 
         // データを抽出
         $opponent = $this->scraper->getOpponentTeamName($game_node);
         if ($opponent === null) {
-            $this->logger->warning('対戦相手チーム名の取得に失敗');
+            $this->logger->warning('対戦相手チーム名の取得に失敗しました');
             return null;
         }
-        $this->logger->debug('対戦相手チーム名を取得', ['opponent' => $opponent]);
 
         $scoreLink = $this->scraper->getScoreLink($game_node);
         $allyScoreStr = $this->scraper->getAllyScore($game_node);
         $opponentScoreStr = $this->scraper->getOpponentScore($game_node);
 
-        $this->logger->debug('スコア情報を取得', [
+        $this->logger->info('生のスコア情報を抽出しました', [
+            'opponent' => $opponent,
             'scoreLink' => $scoreLink,
-            'allyScore' => $allyScoreStr,
-            'opponentScore' => $opponentScoreStr,
+            'allyScoreRaw' => $allyScoreStr,
+            'opponentScoreRaw' => $opponentScoreStr,
         ]);
 
         // スコアを整数に変換（数値でない場合は null）

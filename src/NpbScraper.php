@@ -9,6 +9,7 @@ use DOMNode;
 class NpbScraper
 {
     private string $html;
+    private int $targetTeamPosition = 0; // 1 or 2, 0 means not found
 
     public function loadHtml(string $html): void
     {
@@ -17,6 +18,8 @@ class NpbScraper
 
     public function findGameNode(string $target_date, string $team_name): ?DOMNode
     {
+        $this->targetTeamPosition = 0;
+
         $doc = new DOMDocument();
         @$doc->loadHTML('<?xml encoding="UTF-8">' . $this->html);
         $xpath = new DOMXPath($doc);
@@ -33,8 +36,16 @@ class NpbScraper
                 }
             }
             if ($current_date === $target_date) {
-                $team_node = $xpath->query('.//div[contains(@class, "team") and normalize-space()="' . $team_name . '"]', $row)->item(0);
-                if ($team_node) {
+                // team1 か team2 のいずれかにチーム名が含まれているか確認
+                $team1_node = $xpath->query('.//div[contains(@class, "team1") and normalize-space()="' . $team_name . '"]', $row)->item(0);
+                if ($team1_node) {
+                    $this->targetTeamPosition = 1;
+                    return $row;
+                }
+
+                $team2_node = $xpath->query('.//div[contains(@class, "team2") and normalize-space()="' . $team_name . '"]', $row)->item(0);
+                if ($team2_node) {
+                    $this->targetTeamPosition = 2;
                     return $row;
                 }
             }
@@ -58,7 +69,10 @@ class NpbScraper
     {
         $doc = $game_node->ownerDocument;
         $xpath = new DOMXPath($doc);
-        $opponent_node = $xpath->query('.//div[contains(@class, "team1")]', $game_node)->item(0);
+        
+        // ターゲットチームが team1 なら opponent は team2、逆も然り
+        $opponentClass = ($this->targetTeamPosition === 1) ? 'team2' : 'team1';
+        $opponent_node = $xpath->query('.//div[contains(@class, "' . $opponentClass . '")]', $game_node)->item(0);
 
         if ($opponent_node) {
             return trim($opponent_node->nodeValue);
@@ -70,7 +84,10 @@ class NpbScraper
     {
         $doc = $game_node->ownerDocument;
         $xpath = new DOMXPath($doc);
-        $score_node = $xpath->query('.//div[contains(@class, "score1")]', $game_node)->item(0);
+        
+        // ターゲットチームが team1 なら opponent score は score2
+        $scoreClass = ($this->targetTeamPosition === 1) ? 'score2' : 'score1';
+        $score_node = $xpath->query('.//div[contains(@class, "' . $scoreClass . '")]', $game_node)->item(0);
 
         if ($score_node) {
             return trim($score_node->nodeValue);
@@ -82,7 +99,10 @@ class NpbScraper
     {
         $doc = $game_node->ownerDocument;
         $xpath = new DOMXPath($doc);
-        $score_node = $xpath->query('.//div[contains(@class, "score2")]', $game_node)->item(0);
+        
+        // ターゲットチームが team1 なら ally score は score1
+        $scoreClass = ($this->targetTeamPosition === 1) ? 'score1' : 'score2';
+        $score_node = $xpath->query('.//div[contains(@class, "' . $scoreClass . '")]', $game_node)->item(0);
 
         if ($score_node) {
             return trim($score_node->nodeValue);
