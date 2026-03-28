@@ -69,14 +69,31 @@ function main_event(CloudEvent $cloudevent): void
 
         if (!$gameResult) {
             // 試合が見つからない場合はログに記録し、通知なし
-            $logger->info('本日の阪神の試合は見つかりませんでした');
+            $logger->info('本日の阪神の試合は見つかりませんでした（試合がない、またはまだ開始されていない可能性があります）');
+            return;
+        }
+
+        $logger->info('試合データ取得完了', [
+            'opponent' => $gameResult->getOpponent(),
+            'scoreLink' => $gameResult->getScoreLink(),
+            'allyScore' => $gameResult->getAllyScore(),
+            'opponentScore' => $gameResult->getOpponentScore(),
+        ]);
+
+        // 試合が終了しているかチェック
+        if (!$gameResult->isFinished()) {
+            $logger->info('試合が終了していないと判断しました', [
+                'isFinished' => $gameResult->isFinished(),
+                'allyScore' => $gameResult->getAllyScore(),
+                'opponentScore' => $gameResult->getOpponentScore(),
+                'scoreLink' => $gameResult->getScoreLink(),
+            ]);
             return;
         }
 
         // スコアの完全性をチェック
-        // 試合が終わっていれば、敵・味方両方のスコアが取得できるはず
         if ($gameResult->getAllyScore() === null || $gameResult->getOpponentScore() === null) {
-            $logger->info('試合はまだ終わっていません', [
+            $logger->info('スコアが取得できませんでした', [
                 'allyScore' => $gameResult->getAllyScore(),
                 'opponentScore' => $gameResult->getOpponentScore(),
             ]);

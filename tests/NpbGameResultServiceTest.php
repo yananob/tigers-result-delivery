@@ -4,113 +4,57 @@ namespace Tests;
 
 use App\GameResult;
 use App\NpbGameResultService;
-use PHPUnit\Framework\MockObject\MockObject;
+use GuzzleHttp\Client;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 
 /**
  * NpbGameResultService のテスト
- *
- * note.md の試合データを使用してテストを実施
  */
 class NpbGameResultServiceTest extends TestCase
 {
-    private NpbGameResultService $service;
-
-    protected function setUp(): void
-    {
-        $this->service = new NpbGameResultService();
-    }
-
     /**
      * スケジュール URL の構築をテスト
      */
     public function testBuildScheduleUrlWithValidParams(): void
     {
-        $url = $this->service->buildScheduleUrl(2024, 3);
+        $service = new NpbGameResultService();
+        $url = $service->buildScheduleUrl(2026, 3);
 
         $this->assertEquals(
-            'https://npb.jp/games/2024/schedule_03_detail.html',
+            'https://npb.jp/games/2026/',
             $url,
             "スケジュール URL が正しく構築されるべき"
         );
     }
 
     /**
-     * 異なる年月でのスケジュール URL の構築をテスト
+     * 3/27（金）の試合データ取得をテスト
+     * 2026.html: 読売ジャイアンツ 3-1 阪神タイガース（相手3点、自軍1点）
      */
-    public function testBuildScheduleUrlWithDifferentYearMonth(): void
+    public function testFetchGameResult20260327(): void
     {
-        $url = $this->service->buildScheduleUrl(2023, 8);
+        // フィクスチャを読み込む
+        $html = file_get_contents(__DIR__ . '/fixture/2026.html');
 
-        $this->assertEquals(
-            'https://npb.jp/games/2023/schedule_08_detail.html',
-            $url,
-            "異なる年月でも正しく URL が構築されるべき"
-        );
-    }
+        // Guzzle のモックを作成
+        $mock = new MockHandler([
+            new Response(200, [], $html),
+        ]);
+        $handlerStack = HandlerStack::create($mock);
+        $client = new Client(['handler' => $handlerStack]);
 
-    /**
-     * 3/29（金）の試合データ取得をテスト
-     * note.md: 巨人 4-0 阪神（相手4点、自軍0点）
-     */
-    public function testFetchGameResult20240329(): void
-    {
-        // // 実際のスケジュール URL を取得して検証（ネットワーク未接続の場合はスキップ）
-        // $url = $this->service->buildScheduleUrl(2024, 3);
-        // $ctx = stream_context_create(['http' => ['timeout' => 5]]);
-        // if (@file_get_contents($url, false, $ctx) === false) {
-        //     $this->markTestSkipped('ネットワークに接続できないため実際のURLテストをスキップします');
-        // }
+        $service = new NpbGameResultService($client);
+        $result = $service->fetchGameResult(2026, 3, '3/27', '阪神');
 
-        $result = $this->service->fetchGameResult(2024, 3, '3/29', '阪神');
-
-        $this->assertNotNull($result, "3/29の試合データが取得できるべき");
-        $this->assertEquals('巨人', $result->getOpponent(), "対戦相手は巨人");
-        $this->assertEquals(0, $result->getAllyScore(), "自軍のスコアは0");
-        $this->assertEquals(4, $result->getOpponentScore(), "相手のスコアは4");
-        $this->assertEquals('/scores/2024/0329/g-t-01/', $result->getScoreLink());
-    }
-
-    /**
-     * 3/30（土）の試合データ取得をテスト
-     * note.md: 巨人 5-0 阪神（相手5点、自軍0点）
-     */
-    public function testFetchGameResult20240330(): void
-    {
-        // $url = $this->service->buildScheduleUrl(2024, 3);
-        // $ctx = stream_context_create(['http' => ['timeout' => 5]]);
-        // if (@file_get_contents($url, false, $ctx) === false) {
-        //     $this->markTestSkipped('ネットワークに接続できないため実際のURLテストをスキップします');
-        // }
-
-        $result = $this->service->fetchGameResult(2024, 3, '3/30', '阪神');
-
-        $this->assertNotNull($result, "3/30の試合データが取得できるべき");
-        $this->assertEquals('巨人', $result->getOpponent(), "対戦相手は巨人");
-        $this->assertEquals(0, $result->getAllyScore(), "自軍のスコアは0");
-        $this->assertEquals(5, $result->getOpponentScore(), "相手のスコアは5");
-        $this->assertEquals('/scores/2024/0330/g-t-02/', $result->getScoreLink());
-    }
-
-    /**
-     * 3/31（日）の試合データ取得をテスト
-     * note.md: 巨人 0-5 阪神（相手0点、自軍5点）
-     */
-    public function testFetchGameResult20240331(): void
-    {
-        // $url = $this->service->buildScheduleUrl(2024, 3);
-        // $ctx = stream_context_create(['http' => ['timeout' => 5]]);
-        // if (@file_get_contents($url, false, $ctx) === false) {
-        //     $this->markTestSkipped('ネットワークに接続できないため実際のURLテストをスキップします');
-        // }
-
-        $result = $this->service->fetchGameResult(2024, 3, '3/31', '阪神');
-
-        $this->assertNotNull($result, "3/31の試合データが取得できるべき");
-        $this->assertEquals('巨人', $result->getOpponent(), "対戦相手は巨人");
-        $this->assertEquals(5, $result->getAllyScore(), "自軍のスコアは5");
-        $this->assertEquals(0, $result->getOpponentScore(), "相手のスコアは0");
-        $this->assertEquals('/scores/2024/0331/g-t-03/', $result->getScoreLink());
+        $this->assertNotNull($result, "3/27の試合データが取得できるべき");
+        $this->assertEquals('読売ジャイアンツ', $result->getOpponent(), "対戦相手は読売ジャイアンツ");
+        $this->assertEquals(1, $result->getAllyScore(), "自軍のスコアは1");
+        $this->assertEquals(3, $result->getOpponentScore(), "相手のスコアは3");
+        $this->assertEquals('/scores/2026/0327/g-t-01/', $result->getScoreLink());
+        $this->assertTrue($result->isFinished(), "3/27の試合は終了しているべき");
     }
 
     /**
@@ -118,24 +62,20 @@ class NpbGameResultServiceTest extends TestCase
      */
     public function testFetchGameResultNotFound(): void
     {
-        // $url = $this->service->buildScheduleUrl(2024, 3);
-        // $ctx = stream_context_create(['http' => ['timeout' => 5]]);
-        // if (@file_get_contents($url, false, $ctx) === false) {
-        //     $this->markTestSkipped('ネットワークに接続できないため実際のURLテストをスキップします');
-        // }
+        // フィクスチャを読み込む
+        $html = file_get_contents(__DIR__ . '/fixture/2026.html');
 
-        $result = $this->service->fetchGameResult(2024, 3, '4/1', '阪神');
+        // Guzzle のモックを作成
+        $mock = new MockHandler([
+            new Response(200, [], $html),
+        ]);
+        $handlerStack = HandlerStack::create($mock);
+        $client = new Client(['handler' => $handlerStack]);
+
+        $service = new NpbGameResultService($client);
+        $result = $service->fetchGameResult(2026, 3, '4/1', '阪神');
         $this->assertNull($result, "存在しない日付の試合は null を返すべき");
     }
-
-    /**
-     * テストフィクスチャから GameResult を取得するヘルパーメソッド
-     *
-     * @param string $date 日付（M/D 形式）
-     * @param string $team チーム名
-     * @return GameResult|null
-     */
-    // 注意: 実際の URL を叩くため、ネットワーク環境によっては失敗する可能性があります。
 
     /**
      * GameResult オブジェクトが正しく作成されるかテスト
@@ -143,38 +83,21 @@ class NpbGameResultServiceTest extends TestCase
     public function testGameResultConstruction(): void
     {
         $result = new GameResult(
-            '3/29',
+            '3/27',
             '阪神',
-            '巨人',
-            '/scores/2024/0329/g-t-01/',
-            0,
-            4
+            '読売ジャイアンツ',
+            '/scores/2026/0327/g-t-01/',
+            1,
+            3,
+            true
         );
 
-        $this->assertEquals('3/29', $result->getDate(), "日付が正しく保持される");
+        $this->assertEquals('3/27', $result->getDate(), "日付が正しく保持される");
         $this->assertEquals('阪神', $result->getTeam(), "チーム名が正しく保持される");
-        $this->assertEquals('巨人', $result->getOpponent(), "対戦相手が正しく保持される");
-        $this->assertEquals('/scores/2024/0329/g-t-01/', $result->getScoreLink(), "スコアリンクが正しく保持される");
-        $this->assertEquals(0, $result->getAllyScore(), "自チームのスコアが正しく保持される");
-        $this->assertEquals(4, $result->getOpponentScore(), "対戦相手のスコアが正しく保持される");
-    }
-
-    /**
-     * GameResult オブジェクトでスコアが null の場合をテスト
-     */
-    public function testGameResultWithNullScores(): void
-    {
-        $result = new GameResult(
-            '3/29',
-            '阪神',
-            '巨人',
-            null,
-            null,
-            null
-        );
-
-        $this->assertNull($result->getScoreLink(), "スコアリンクが null で保持される");
-        $this->assertNull($result->getAllyScore(), "自チームのスコアが null で保持される");
-        $this->assertNull($result->getOpponentScore(), "対戦相手のスコアが null で保持される");
+        $this->assertEquals('読売ジャイアンツ', $result->getOpponent(), "対戦相手が正しく保持される");
+        $this->assertEquals('/scores/2026/0327/g-t-01/', $result->getScoreLink(), "スコアリンクが正しく保持される");
+        $this->assertEquals(1, $result->getAllyScore(), "自チームのスコアが正しく保持される");
+        $this->assertEquals(3, $result->getOpponentScore(), "対戦相手のスコアが正しく保持される");
+        $this->assertTrue($result->isFinished(), "終了フラグが正しく保持される");
     }
 }

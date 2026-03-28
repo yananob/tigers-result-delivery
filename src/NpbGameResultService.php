@@ -14,11 +14,13 @@ class NpbGameResultService
 {
     private NpbScraper $scraper;
     private Logger $logger;
+    private Client $client;
 
-    public function __construct()
+    public function __construct(?Client $client = null)
     {
         $this->scraper = new NpbScraper();
         $this->logger = LoggerFactory::getLogger();
+        $this->client = $client ?? new Client(['timeout' => 10]);
     }
 
     /**
@@ -30,7 +32,7 @@ class NpbGameResultService
      */
     public function buildScheduleUrl(int $year, int $month): string
     {
-        return "https://npb.jp/games/{$year}/schedule_" . str_pad((string)$month, 2, '0', STR_PAD_LEFT) . "_detail.html";
+        return "https://npb.jp/games/{$year}/";
     }
 
     /**
@@ -56,9 +58,8 @@ class NpbGameResultService
         $this->logger->debug('スケジュール URL を構築', ['url' => $url]);
 
         // URL から HTML を取得（Guzzle を使用）
-        $client = new Client(['timeout' => 10]);
         try {
-            $response = $client->request('GET', $url, [
+            $response = $this->client->request('GET', $url, [
                 'headers' => [
                     // Android Chrome の User-Agent
                     'User-Agent' => 'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Mobile Safari/537.36',
@@ -105,11 +106,13 @@ class NpbGameResultService
         $scoreLink = $this->scraper->getScoreLink($game_node);
         $allyScoreStr = $this->scraper->getAllyScore($game_node);
         $opponentScoreStr = $this->scraper->getOpponentScore($game_node);
+        $isFinished = $this->scraper->isGameFinished($game_node);
 
         $this->logger->debug('スコア情報を取得', [
             'scoreLink' => $scoreLink,
             'allyScore' => $allyScoreStr,
             'opponentScore' => $opponentScoreStr,
+            'isFinished' => $isFinished,
         ]);
 
         // スコアを整数に変換（数値でない場合は null）
@@ -122,7 +125,8 @@ class NpbGameResultService
             $opponent,
             $scoreLink,
             $allyScore,
-            $opponentScore
+            $opponentScore,
+            $isFinished
         );
 
         $this->logger->info('ゲーム結果を取得完了', [
