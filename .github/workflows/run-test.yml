@@ -1,13 +1,15 @@
 name: Run test
 
 on:
-  pull_request:
-     types: [opened, reopened, synchronize, edited]
-     branches: test
   push:
     branches:
-      # - main
       - test
+  pull_request:
+    types:
+      - 'opened'
+      - 'synchronize'
+      - 'edited'
+      - 'reopened'
 
   schedule:
     - cron:  '45 21 * * 5'
