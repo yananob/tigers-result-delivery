@@ -17,13 +17,9 @@ jobs:
     uses: yananob/cloud-functions-common/.github/workflows/deploy-cloud-functions.yaml@main
     with:
       function_name: tigers-result-delivery
-      project_id: 'nobu5-393106'
-      region: 'us-west1'
       service_account_name: 'cloud-run-functions-deployer'
-      gcp_project_number: '1035100650942'
       wip_pool_name: 'github-actions-pool'
       wip_provider_name: 'github-provider'
-      secrets_project_id: 'nobu5-393106'
       secrets_config: |-
         LINE_TOKENS_N_TARGETS
         FIREBASE_SERVICE_ACCOUNT
@@ -39,3 +35,7 @@ jobs:
       event_timeout: '540s'
       environment_variables: |-
         APP_ENV=production
+    secrets:
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      GCP_REGION: ${{ secrets.GCP_REGION }}
+      GCP_PROJECT_NUMBER: ${{ secrets.GCP_PROJECT_NUMBER }}
