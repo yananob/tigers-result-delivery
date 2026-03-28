@@ -10,7 +10,7 @@ use Monolog\Logger;
  * 通知履歴サービス
  * 
  * Firestore に試合結果の通知済み状態を記録・確認します。
- * パス形式：/result-delivery-test/results/results/{YYYY-MM-DD}
+ * パス形式：/tigers-result-delivery-test/results/results/{YYYY-MM-DD}
  */
 class NotificationHistoryService
 {

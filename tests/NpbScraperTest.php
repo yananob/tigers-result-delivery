@@ -13,7 +13,7 @@ class NpbScraperTest extends TestCase
     public static function setUpBeforeClass(): void
     {
         // The fixture directory is now at the root
-        self::$html = file_get_contents(__DIR__ . '/fixture/schedule_03_detail.html');
+        self::$html = file_get_contents(__DIR__ . '/fixture/2026.html');
     }
 
     protected function setUp(): void
@@ -22,87 +22,45 @@ class NpbScraperTest extends TestCase
         $this->scraper->loadHtml(self::$html);
     }
 
-    public function testFindGameNodeSuccessfully(): void
+    public function test指定日の試合情報が見つかること(): void
     {
-        $gameNode = $this->scraper->findGameNode('3/29', '阪神');
-        $this->assertNotNull($gameNode, "3/29の阪神の試合が見つかるべき");
+        $gameNode = $this->scraper->findGameNode('3/27', '阪神');
+        $this->assertNotNull($gameNode, "3/27の阪神の試合が見つかるべき");
     }
 
-    public function testFindGameNodeForNonExistentGame(): void
+    public function test存在しない試合は見つからないこと(): void
     {
-        $gameNode = $this->scraper->findGameNode('3/29', '存在しないチーム');
+        $gameNode = $this->scraper->findGameNode('3/27', '存在しないチーム');
         $this->assertNull($gameNode, "存在しないチームの試合は見つからないはず");
     }
 
-    public function testGetScoreLink(): void
+    public function testスコアへのリンクが正しく取得できること(): void
     {
-        $gameNode = $this->scraper->findGameNode('3/29', '阪神');
+        $gameNode = $this->scraper->findGameNode('3/27', '阪神');
         $this->assertNotNull($gameNode);
 
         $scoreLink = $this->scraper->getScoreLink($gameNode);
-        $this->assertEquals('/scores/2024/0329/g-t-01/', $scoreLink, "スコアへのリンクが正しく取得できるべき");
+        $this->assertEquals('/scores/2026/0327/g-t-01/', $scoreLink, "スコアへのリンクが正しく取得できるべき");
     }
 
     /**
-     * 3/29（金）の試合データをテスト
+     * 3/27（金）の試合データをテスト
      */
-    public function testMatch20240329(): void
+    public function test2026年3月27日の試合データが正しく取得できること(): void
     {
-        $gameNode = $this->scraper->findGameNode('3/29', '阪神');
-        $this->assertNotNull($gameNode, "3/29の阪神の試合が見つかるべき");
+        $gameNode = $this->scraper->findGameNode('3/27', '阪神');
+        $this->assertNotNull($gameNode, "3/27の阪神の試合が見つかるべき");
 
         $scoreLink = $this->scraper->getScoreLink($gameNode);
-        $this->assertEquals('/scores/2024/0329/g-t-01/', $scoreLink, "3/29のスコアリンクが正しい");
+        $this->assertEquals('/scores/2026/0327/g-t-01/', $scoreLink, "3/27のスコアリンクが正しい");
 
         $opponentTeamName = $this->scraper->getOpponentTeamName($gameNode);
-        $this->assertEquals('巨人', $opponentTeamName, "3/29の対戦相手が正しい");
+        $this->assertEquals('読売ジャイアンツ', $opponentTeamName, "3/27の対戦相手が正しい");
 
         $opponentScore = $this->scraper->getOpponentScore($gameNode);
-        $this->assertEquals('4', $opponentScore, "3/29の相手チームのスコアが正しい");
+        $this->assertEquals('3', $opponentScore, "3/27の相手チームのスコアが正しい");
 
         $allyScore = $this->scraper->getAllyScore($gameNode);
-        $this->assertEquals('0', $allyScore, "3/29の自チームのスコアが正しい");
-    }
-
-    /**
-     * 3/30（土）の試合データをテスト
-     */
-    public function testMatch20240330(): void
-    {
-        $gameNode = $this->scraper->findGameNode('3/30', '阪神');
-        $this->assertNotNull($gameNode, "3/30の阪神の試合が見つかるべき");
-
-        $scoreLink = $this->scraper->getScoreLink($gameNode);
-        $this->assertEquals('/scores/2024/0330/g-t-02/', $scoreLink, "3/30のスコアリンクが正しい");
-
-        $opponentTeamName = $this->scraper->getOpponentTeamName($gameNode);
-        $this->assertEquals('巨人', $opponentTeamName, "3/30の対戦相手が正しい");
-
-        $opponentScore = $this->scraper->getOpponentScore($gameNode);
-        $this->assertEquals('5', $opponentScore, "3/30の相手チームのスコアが正しい");
-
-        $allyScore = $this->scraper->getAllyScore($gameNode);
-        $this->assertEquals('0', $allyScore, "3/30の自チームのスコアが正しい");
-    }
-
-    /**
-     * 3/31（日）の試合データをテスト
-     */
-    public function testMatch20240331(): void
-    {
-        $gameNode = $this->scraper->findGameNode('3/31', '阪神');
-        $this->assertNotNull($gameNode, "3/31の阪神の試合が見つかるべき");
-
-        $scoreLink = $this->scraper->getScoreLink($gameNode);
-        $this->assertEquals('/scores/2024/0331/g-t-03/', $scoreLink, "3/31のスコアリンクが正しい");
-
-        $opponentTeamName = $this->scraper->getOpponentTeamName($gameNode);
-        $this->assertEquals('巨人', $opponentTeamName, "3/31の対戦相手が正しい");
-
-        $opponentScore = $this->scraper->getOpponentScore($gameNode);
-        $this->assertEquals('0', $opponentScore, "3/31の相手チームのスコアが正しい");
-
-        $allyScore = $this->scraper->getAllyScore($gameNode);
-        $this->assertEquals('5', $allyScore, "3/31の自チームのスコアが正しい");
+        $this->assertEquals('1', $allyScore, "3/27の自チームのスコアが正しい");
     }
 }
