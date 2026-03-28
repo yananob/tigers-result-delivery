@@ -54,16 +54,6 @@ function main_event(CloudEvent $cloudevent): void
             return;
         }
 
-        // 時間チェック：14:00～23:59（日本時間）
-        $hour = $now->hour;
-        if ($hour < 14) {
-            $logger->info('時間外のため処理を終了します', [
-                'now' => $now->format('Y-m-d H:i:s'),
-                'operatingHours' => '14:00～23:59',
-            ]);
-            return;
-        }
-
         // 通知済みチェック
         $historyService = new NotificationHistoryService();
         $dateString = $now->format('Y-m-d');
