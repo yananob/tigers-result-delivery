@@ -30,7 +30,7 @@ class NpbGameResultService
      */
     public function buildScheduleUrl(int $year, int $month): string
     {
-        return "https://npb.jp/games/{$year}/schedule_" . str_pad((string)$month, 2, '0', STR_PAD_LEFT) . "_detail.html";
+        return "https://npb.jp/games/{$year}/";
     }
 
     /**
@@ -86,30 +86,30 @@ class NpbGameResultService
         // 試合ノードを検索
         $game_node = $this->scraper->findGameNode($target_date, $team_name);
         if ($game_node === null) {
-            $this->logger->info('指定された日付とチームの試合が見つかりませんでした', [
+            $this->logger->info('試合ノードが見つかりません', [
                 'date' => $target_date,
                 'team' => $team_name,
             ]);
             return null;
         }
-        $this->logger->info('対象の試合ノードを検出しました');
+        $this->logger->debug('試合ノードを検出');
 
         // データを抽出
         $opponent = $this->scraper->getOpponentTeamName($game_node);
         if ($opponent === null) {
-            $this->logger->warning('対戦相手チーム名の取得に失敗しました');
+            $this->logger->warning('対戦相手チーム名の取得に失敗');
             return null;
         }
+        $this->logger->debug('対戦相手チーム名を取得', ['opponent' => $opponent]);
 
         $scoreLink = $this->scraper->getScoreLink($game_node);
         $allyScoreStr = $this->scraper->getAllyScore($game_node);
         $opponentScoreStr = $this->scraper->getOpponentScore($game_node);
 
-        $this->logger->info('生のスコア情報を抽出しました', [
-            'opponent' => $opponent,
+        $this->logger->debug('スコア情報を取得', [
             'scoreLink' => $scoreLink,
-            'allyScoreRaw' => $allyScoreStr,
-            'opponentScoreRaw' => $opponentScoreStr,
+            'allyScore' => $allyScoreStr,
+            'opponentScore' => $opponentScoreStr,
         ]);
 
         // スコアを整数に変換（数値でない場合は null）
