@@ -4,11 +4,11 @@
     "license": "proprietary",
     "require": {
         "php": ">= 8.2",
-        "google/cloud-functions-framework": "^1.3",
-        "google/cloud-firestore": "^1.5",
-        "guzzlehttp/guzzle": "^7.8",
+        "google/cloud-functions-framework": "^1.4",
+        "google/cloud-firestore": "^1.55",
+        "guzzlehttp/guzzle": "^7.10",
         "nesbot/carbon": "^3.8",
-        "paquettg/php-html-parser": "^3.1",
+        "paquettg/php-html-parser": "^2.2",
         "openai-php/client": "^0.18.0",
         "http-interop/http-factory-guzzle": "^1.2",
         "monolog/monolog": "^3.10"
