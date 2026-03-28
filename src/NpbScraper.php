@@ -127,4 +127,10 @@ class NpbScraper
 
         return null;
     }
+
+    public function isGameFinished(DOMNode $game_node): bool
+    {
+        // "試合終了" という文字が含まれているかチェック
+        return strpos($game_node->nodeValue, '試合終了') !== false;
+    }
 }

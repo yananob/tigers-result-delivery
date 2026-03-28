@@ -54,6 +54,7 @@ class NpbGameResultServiceTest extends TestCase
         $this->assertEquals(1, $result->getAllyScore(), "自軍のスコアは1");
         $this->assertEquals(3, $result->getOpponentScore(), "相手のスコアは3");
         $this->assertEquals('/scores/2026/0327/g-t-01/', $result->getScoreLink());
+        $this->assertTrue($result->isFinished(), "3/27の試合は終了しているべき");
     }
 
     /**
@@ -87,7 +88,8 @@ class NpbGameResultServiceTest extends TestCase
             '読売ジャイアンツ',
             '/scores/2026/0327/g-t-01/',
             1,
-            3
+            3,
+            true
         );
 
         $this->assertEquals('3/27', $result->getDate(), "日付が正しく保持される");
@@ -96,5 +98,6 @@ class NpbGameResultServiceTest extends TestCase
         $this->assertEquals('/scores/2026/0327/g-t-01/', $result->getScoreLink(), "スコアリンクが正しく保持される");
         $this->assertEquals(1, $result->getAllyScore(), "自チームのスコアが正しく保持される");
         $this->assertEquals(3, $result->getOpponentScore(), "対戦相手のスコアが正しく保持される");
+        $this->assertTrue($result->isFinished(), "終了フラグが正しく保持される");
     }
 }

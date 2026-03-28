@@ -80,13 +80,22 @@ function main_event(CloudEvent $cloudevent): void
             'opponentScore' => $gameResult->getOpponentScore(),
         ]);
 
-        // スコアの完全性をチェック
-        // 試合が終わっていれば、敵・味方両方のスコアが取得できるはず
-        if ($gameResult->getAllyScore() === null || $gameResult->getOpponentScore() === null) {
-            $logger->info('試合が終了していないと判断しました（スコアが未確定です）', [
+        // 試合が終了しているかチェック
+        if (!$gameResult->isFinished()) {
+            $logger->info('試合が終了していないと判断しました', [
+                'isFinished' => $gameResult->isFinished(),
                 'allyScore' => $gameResult->getAllyScore(),
                 'opponentScore' => $gameResult->getOpponentScore(),
                 'scoreLink' => $gameResult->getScoreLink(),
+            ]);
+            return;
+        }
+
+        // スコアの完全性をチェック
+        if ($gameResult->getAllyScore() === null || $gameResult->getOpponentScore() === null) {
+            $logger->info('スコアが取得できませんでした', [
+                'allyScore' => $gameResult->getAllyScore(),
+                'opponentScore' => $gameResult->getOpponentScore(),
             ]);
             return;
         }

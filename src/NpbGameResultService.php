@@ -106,11 +106,13 @@ class NpbGameResultService
         $scoreLink = $this->scraper->getScoreLink($game_node);
         $allyScoreStr = $this->scraper->getAllyScore($game_node);
         $opponentScoreStr = $this->scraper->getOpponentScore($game_node);
+        $isFinished = $this->scraper->isGameFinished($game_node);
 
         $this->logger->debug('スコア情報を取得', [
             'scoreLink' => $scoreLink,
             'allyScore' => $allyScoreStr,
             'opponentScore' => $opponentScoreStr,
+            'isFinished' => $isFinished,
         ]);
 
         // スコアを整数に変換（数値でない場合は null）
@@ -123,7 +125,8 @@ class NpbGameResultService
             $opponent,
             $scoreLink,
             $allyScore,
-            $opponentScore
+            $opponentScore,
+            $isFinished
         );
 
         $this->logger->info('ゲーム結果を取得完了', [

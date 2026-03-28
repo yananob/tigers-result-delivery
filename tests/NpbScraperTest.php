@@ -61,6 +61,8 @@ class NpbScraperTest extends TestCase
         $this->assertEquals('3', $opponentScore, "3/27の相手チームのスコアが正しい");
 
         $allyScore = $this->scraper->getAllyScore($gameNode);
-        $this->assertEquals('1', $allyScore, "3/27の自チームのスコアが正しい");
+        $this->assertEquals('1', $allyScore, "3/27 of ally score is correct");
+
+        $this->assertTrue($this->scraper->isGameFinished($gameNode), "3/27の試合は終了しているはず");
     }
 }

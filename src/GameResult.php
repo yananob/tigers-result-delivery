@@ -13,7 +13,8 @@ class GameResult
         private string $opponent,       // 対戦相手チーム名
         private ?string $scoreLink,     // スコアページへのリンク
         private ?int $allyScore,        // 我がチームのスコア
-        private ?int $opponentScore     // 対戦相手のスコア
+        private ?int $opponentScore,    // 対戦相手のスコア
+        private bool $isFinished = false // 試合が終了したか
     ) {
     }
 
@@ -45,5 +46,10 @@ class GameResult
     public function getOpponentScore(): ?int
     {
         return $this->opponentScore;
+    }
+
+    public function isFinished(): bool
+    {
+        return $this->isFinished;
     }
 }
