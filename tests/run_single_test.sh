@@ -11,4 +11,3 @@ echo "Running PHPUnit of $1..."
 ./vendor/bin/phpunit --testdox $1
 
 source ./_cf-common/test/unset_secrets.sh ${SECRETS[*]}
-
