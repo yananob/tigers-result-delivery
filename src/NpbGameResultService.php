@@ -12,15 +12,20 @@ use GuzzleHttp\Exception\GuzzleException;
  */
 class NpbGameResultService
 {
-    private NpbScraper $scraper;
+    private YahooScraper $scraper;
     private Logger $logger;
     private Client $client;
 
     public function __construct(?Client $client = null)
     {
-        $this->scraper = new NpbScraper();
+        $this->scraper = new YahooScraper();
         $this->logger = LoggerFactory::getLogger();
-        $this->client = $client ?? new Client(['timeout' => 10]);
+        $this->client = $client ?? new Client([
+            'timeout' => 10,
+            'headers' => [
+                'User-Agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1',
+            ],
+        ]);
     }
 
     /**
@@ -28,11 +33,16 @@ class NpbGameResultService
      *
      * @param int $year 年
      * @param int $month 月
+     * @param int|null $day 日
      * @return string スケジュール URL
      */
-    public function buildScheduleUrl(int $year, int $month): string
+    public function buildScheduleUrl(int $year, int $month, ?int $day = null): string
     {
-        return "https://npb.jp/games/{$year}/";
+        if ($day !== null) {
+            $date_str = sprintf('%04d-%02d-%02d', $year, $month, $day);
+            return "https://baseball.yahoo.co.jp/npb/schedule/?date={$date_str}";
+        }
+        return "https://baseball.yahoo.co.jp/npb/schedule/";
     }
 
     /**
@@ -53,17 +63,19 @@ class NpbGameResultService
             'team' => $team_name,
         ]);
 
+        // target_date (M/D) から日を抽出
+        $day = null;
+        if (preg_match('/\/(\d+)$/', $target_date, $matches)) {
+            $day = (int)$matches[1];
+        }
+
         // URL を構築
-        $url = $this->buildScheduleUrl($year, $month);
+        $url = $this->buildScheduleUrl($year, $month, $day);
         $this->logger->debug('スケジュール URL を構築', ['url' => $url]);
 
         // URL から HTML を取得（Guzzle を使用）
         try {
             $response = $this->client->request('GET', $url, [
-                'headers' => [
-                    // Android Chrome の User-Agent
-                    'User-Agent' => 'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Mobile Safari/537.36',
-                ],
                 'http_errors' => false,
             ]);
 
@@ -96,7 +108,7 @@ class NpbGameResultService
         $this->logger->debug('試合ノードを検出');
 
         // データを抽出
-        $opponent = $this->scraper->getOpponentTeamName($game_node);
+        $opponent = $this->scraper->getOpponentTeamName($game_node, $team_name);
         if ($opponent === null) {
             $this->logger->warning('対戦相手チーム名の取得に失敗');
             return null;
@@ -104,8 +116,8 @@ class NpbGameResultService
         $this->logger->debug('対戦相手チーム名を取得', ['opponent' => $opponent]);
 
         $scoreLink = $this->scraper->getScoreLink($game_node);
-        $allyScoreStr = $this->scraper->getAllyScore($game_node);
-        $opponentScoreStr = $this->scraper->getOpponentScore($game_node);
+        $allyScoreStr = $this->scraper->getAllyScore($game_node, $team_name);
+        $opponentScoreStr = $this->scraper->getOpponentScore($game_node, $team_name);
         $isFinished = $this->scraper->isGameFinished($game_node);
 
         $this->logger->debug('スコア情報を取得', [

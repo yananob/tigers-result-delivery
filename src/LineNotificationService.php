@@ -120,7 +120,7 @@ class LineNotificationService
 
 阪神 {$allyScore} - {$opponentScore} {$opponent}
 
-https://npb.jp{$result->getScoreLink()}
+https://baseball.yahoo.co.jp{$result->getScoreLink()}
 EOT;
 
         return $message;
