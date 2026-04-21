@@ -113,15 +113,20 @@ class LineNotificationService
         $allyScore = $result->getAllyScore();
         $opponentScore = $result->getOpponentScore();
         $opponent = $result->getOpponent();
+        $summary = $result->getSummary();
 
         $message = <<<EOT
 ＜試合終了＞
 ⚾🐅
 
 阪神 {$allyScore} - {$opponentScore} {$opponent}
-
-https://baseball.yahoo.co.jp{$result->getScoreLink()}
 EOT;
+
+        if ($summary) {
+            $message .= "\n\n" . $summary;
+        }
+
+        $message .= "\n\nhttps://baseball.yahoo.co.jp{$result->getScoreLink()}";
 
         return $message;
     }

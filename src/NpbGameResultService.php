@@ -13,12 +13,14 @@ use GuzzleHttp\Exception\GuzzleException;
 class NpbGameResultService
 {
     private YahooScraper $scraper;
+    private AiSummaryService $aiSummaryService;
     private Logger $logger;
     private Client $client;
 
     public function __construct(?Client $client = null)
     {
         $this->scraper = new YahooScraper();
+        $this->aiSummaryService = new AiSummaryService();
         $this->logger = LoggerFactory::getLogger();
         $this->client = $client ?? new Client([
             'timeout' => 10,
@@ -141,6 +143,11 @@ class NpbGameResultService
             $isFinished
         );
 
+        // 試合終了している場合、詳細ページから追加情報を取得
+        if ($isFinished && $scoreLink) {
+            $this->fetchAndFillDetailInfo($result);
+        }
+
         $this->logger->info('ゲーム結果を取得完了', [
             'date' => $target_date,
             'ally' => $team_name,
@@ -149,5 +156,42 @@ class NpbGameResultService
         ]);
 
         return $result;
+    }
+
+    /**
+     * 詳細ページから情報を取得して GameResult にセットする
+     */
+    private function fetchAndFillDetailInfo(GameResult $result): void
+    {
+        $detailUrl = "https://baseball.yahoo.co.jp" . $result->getScoreLink();
+        $this->logger->info('詳細ページの取得を開始', ['url' => $detailUrl]);
+
+        try {
+            $response = $this->client->request('GET', $detailUrl, [
+                'http_errors' => false,
+            ]);
+
+            if ($response->getStatusCode() !== 200) {
+                $this->logger->warning('詳細ページの取得に失敗', ['url' => $detailUrl, 'status' => $response->getStatusCode()]);
+                return;
+            }
+
+            $html = (string)$response->getBody();
+            $this->scraper->loadHtml($html);
+
+            $review = $this->scraper->getGameReview();
+            $scoringPlays = $this->scraper->getScoringPlays();
+            $homeRuns = $this->scraper->getHomeRuns();
+
+            $result->setScoringPlays($scoringPlays);
+            $result->setHomeRuns($homeRuns);
+
+            if ($review) {
+                $summary = $this->aiSummaryService->summarize($review, $scoringPlays, $homeRuns);
+                $result->setSummary($summary);
+            }
+        } catch (GuzzleException $e) {
+            $this->logger->warning('詳細ページの取得に失敗（例外）', ['url' => $detailUrl, 'error' => $e->getMessage()]);
+        }
     }
 }
