@@ -14,7 +14,10 @@ class GameResult
         private ?string $scoreLink,     // スコアページへのリンク
         private ?int $allyScore,        // 我がチームのスコア
         private ?int $opponentScore,    // 対戦相手のスコア
-        private bool $isFinished = false // 試合が終了したか
+        private bool $isFinished = false, // 試合が終了したか
+        private ?string $summary = null, // AIによる要約
+        private array $scoringPlays = [], // スコアプレー
+        private array $homeRuns = []     // 本塁打
     ) {
     }
 
@@ -51,5 +54,35 @@ class GameResult
     public function isFinished(): bool
     {
         return $this->isFinished;
+    }
+
+    public function getSummary(): ?string
+    {
+        return $this->summary;
+    }
+
+    public function setSummary(?string $summary): void
+    {
+        $this->summary = $summary;
+    }
+
+    public function getScoringPlays(): array
+    {
+        return $this->scoringPlays;
+    }
+
+    public function setScoringPlays(array $scoringPlays): void
+    {
+        $this->scoringPlays = $scoringPlays;
+    }
+
+    public function getHomeRuns(): array
+    {
+        return $this->homeRuns;
+    }
+
+    public function setHomeRuns(array $homeRuns): void
+    {
+        $this->homeRuns = $homeRuns;
     }
 }

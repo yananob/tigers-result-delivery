@@ -37,10 +37,12 @@ class NpbGameResultServiceTest extends TestCase
     {
         // フィクスチャを読み込む
         $html = file_get_contents(__DIR__ . '/fixture/yahoo_npb_schedule.html');
+        $detailHtml = file_get_contents(__DIR__ . '/fixture/yahoo_game_detail.html');
 
         // Guzzle のモックを作成
         $mock = new MockHandler([
             new Response(200, [], $html),
+            new Response(200, [], $detailHtml),
         ]);
         $handlerStack = HandlerStack::create($mock);
         $client = new Client(['handler' => $handlerStack]);
