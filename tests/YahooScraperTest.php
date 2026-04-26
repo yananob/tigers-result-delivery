@@ -82,4 +82,21 @@ class YahooScraperTest extends TestCase
 
         $this->assertFalse($this->scraper->isGameFinished($gameNode), "ヤクルトの試合は終了していないはず（7回裏）");
     }
+
+    public function test詳細ページから戦評などが取得できること(): void
+    {
+        $detailHtml = file_get_contents(__DIR__ . '/fixture/yahoo_game_detail.html');
+        $this->scraper->loadHtml($detailHtml);
+
+        $review = $this->scraper->getGameReview();
+        $this->assertStringContainsString('巨人は0-1で迎えた7回裏', $review);
+
+        $scoringPlays = $this->scraper->getScoringPlays();
+        $this->assertCount(2, $scoringPlays);
+        $this->assertStringContainsString('4回表：2アウト満塁の2-2からレフトへの先制タイムリーヒット！', $scoringPlays[0]);
+
+        $homeRuns = $this->scraper->getHomeRuns();
+        // 今回のフィクスチャでは本塁打なし
+        $this->assertEmpty($homeRuns);
+    }
 }

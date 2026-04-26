@@ -126,4 +126,73 @@ class YahooScraper
 
         return false;
     }
+
+    /**
+     * 戦評を取得する
+     */
+    public function getGameReview(): ?string
+    {
+        $doc = new DOMDocument();
+        @$doc->loadHTML('<?xml encoding="UTF-8">' . $this->html);
+        $xpath = new DOMXPath($doc);
+
+        $nodes = $xpath->query('//h2[contains(text(), "戦評")]/following::p[contains(@class, "bb-paragraph")]');
+        if ($nodes->length > 0) {
+            return trim($nodes->item(0)->nodeValue);
+        }
+        return null;
+    }
+
+    /**
+     * スコアプレーを取得する
+     * @return string[]
+     */
+    public function getScoringPlays(): array
+    {
+        $doc = new DOMDocument();
+        @$doc->loadHTML('<?xml encoding="UTF-8">' . $this->html);
+        $xpath = new DOMXPath($doc);
+
+        $plays = [];
+        $items = $xpath->query('//li[contains(@class, "bb-scorePlay__item")]');
+        foreach ($items as $item) {
+            $inning = $xpath->query('.//p[contains(@class, "bb-scorePlay__inning")]', $item)->item(0);
+            $detail = $xpath->query('.//div[contains(@class, "bb-scorePlay__detail")]/p', $item)->item(0);
+
+            if ($inning && $detail) {
+                $inningText = trim($inning->nodeValue);
+                $detailText = trim(preg_replace('/\s+/', ' ', $detail->nodeValue));
+                $plays[] = "{$inningText}：{$detailText}";
+            }
+        }
+        return $plays;
+    }
+
+    /**
+     * 本塁打情報を取得する
+     * @return string[]
+     */
+    public function getHomeRuns(): array
+    {
+        $doc = new DOMDocument();
+        @$doc->loadHTML('<?xml encoding="UTF-8">' . $this->html);
+        $xpath = new DOMXPath($doc);
+
+        $homeRuns = [];
+        $header = $xpath->query('//h2[contains(text(), "本塁打")]')->item(0);
+        if ($header) {
+            $table = $xpath->query('following::table[contains(@class, "bb-gameLeftTable")]', $header)->item(0);
+            if ($table) {
+                $rows = $xpath->query('.//tr', $table);
+                foreach ($rows as $row) {
+                    $team = $xpath->query('.//th', $row)->item(0);
+                    $data = $xpath->query('.//td', $row)->item(0);
+                    if ($team && $data && trim($data->nodeValue) !== '') {
+                        $homeRuns[] = trim($team->nodeValue) . "：" . trim($data->nodeValue);
+                    }
+                }
+            }
+        }
+        return $homeRuns;
+    }
 }
