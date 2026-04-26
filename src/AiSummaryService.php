@@ -16,9 +16,9 @@ class AiSummaryService
     public function __construct()
     {
         $this->logger = LoggerFactory::getLogger();
-        $apiKey = getenv('OPENAI_KEY_LINE_AI_BOT');
+        $apiKey = getenv('OPENAI_KEY_SMALL_CF_APPS');
         if (!$apiKey) {
-            $this->logger->warning('OPENAI_KEY_LINE_AI_BOT が設定されていないため、AI 要約はスキップされます');
+            $this->logger->warning('OPENAI_KEY_SMALL_CF_APPS が設定されていないため、AI 要約はスキップされます');
             return;
         }
         $this->client = OpenAI::client($apiKey);

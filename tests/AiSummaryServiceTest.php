@@ -19,8 +19,8 @@ class AiSummaryServiceTest extends TestCase
         $this->assertInstanceOf(AiSummaryService::class, $this->service);
 
         // 環境変数を一時的にクリア
-        $originalKey = getenv('OPENAI_KEY_LINE_AI_BOT');
-        putenv('OPENAI_KEY_LINE_AI_BOT');
+        $originalKey = getenv('OPENAI_KEY_SMALL_CF_APPS');
+        putenv('OPENAI_KEY_SMALL_CF_APPS');
 
         $service = new AiSummaryService();
         $result = $service->summarize('test', [], []);
@@ -28,7 +28,7 @@ class AiSummaryServiceTest extends TestCase
 
         // 元に戻す
         if ($originalKey !== false) {
-            putenv("OPENAI_KEY_LINE_AI_BOT=$originalKey");
+            putenv("OPENAI_KEY_SMALL_CF_APPS=$originalKey");
         }
     }
 }
