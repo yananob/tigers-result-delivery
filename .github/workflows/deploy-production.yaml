@@ -23,6 +23,7 @@ jobs:
       secrets_config: |-
         LINE_TOKENS_N_TARGETS
         FIREBASE_SERVICE_ACCOUNT
+        OPENAI_KEY_SMALL_CF_APPS
       # gcs_source_dir: ./public/
       # gcs_bucket_name: tigers-result-delivery-static
       # gcs_bucket_path: 
