@@ -183,12 +183,22 @@ class NpbGameResultService
             $scoringPlays = $this->scraper->getScoringPlays();
             $homeRuns = $this->scraper->getHomeRuns();
 
+            $this->logger->info('詳細ページからデータを抽出完了', [
+                'hasReview' => !empty($review),
+                'scoringPlaysCount' => count($scoringPlays),
+                'homeRunsCount' => count($homeRuns),
+            ]);
+
             $result->setScoringPlays($scoringPlays);
             $result->setHomeRuns($homeRuns);
 
             if ($review) {
+                $this->logger->info('AI 要約の生成を開始します');
                 $summary = $this->aiSummaryService->summarize($review, $scoringPlays, $homeRuns);
                 $result->setSummary($summary);
+                $this->logger->info('AI 要約の生成結果', ['hasSummary' => !empty($summary)]);
+            } else {
+                $this->logger->warning('戦評が見つからないため、AI 要約をスキップします');
             }
         } catch (GuzzleException $e) {
             $this->logger->warning('詳細ページの取得に失敗（例外）', ['url' => $detailUrl, 'error' => $e->getMessage()]);
