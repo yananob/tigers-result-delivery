@@ -21,6 +21,7 @@ class AiSummaryService
             $this->logger->warning('OPENAI_KEY_SMALL_CF_APPS が設定されていないため、AI 要約はスキップされます');
             return;
         }
+        $this->logger->info('OpenAI クライアントを初期化しました', ['env' => 'OPENAI_KEY_SMALL_CF_APPS']);
         $this->client = OpenAI::client($apiKey);
     }
 
@@ -35,10 +36,15 @@ class AiSummaryService
     public function summarize(string $review, array $scoringPlays, array $homeRuns): ?string
     {
         if (!$this->client) {
+            $this->logger->warning('OpenAI クライアントが初期化されていないため、要約をスキップします');
             return null;
         }
 
         $prompt = $this->buildPrompt($review, $scoringPlays, $homeRuns);
+        $this->logger->info('OpenAI API リクエストを送信します', [
+            'model' => 'gpt-4o-mini',
+            'prompt_length' => mb_strlen($prompt)
+        ]);
         $this->logger->debug('OpenAI へのプロンプト', ['prompt' => $prompt]);
 
         try {
