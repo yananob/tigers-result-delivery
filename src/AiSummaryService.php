@@ -28,19 +28,18 @@ class AiSummaryService
     /**
      * 試合情報を要約する
      *
-     * @param string $review 戦評
      * @param array $scoringPlays スコアプレー
      * @param array $homeRuns 本塁打
      * @return string|null 要約結果
      */
-    public function summarize(string $review, array $scoringPlays, array $homeRuns): ?string
+    public function summarize(array $scoringPlays, array $homeRuns): ?string
     {
         if (!$this->client) {
             $this->logger->warning('OpenAI クライアントが初期化されていないため、要約をスキップします');
             return null;
         }
 
-        $prompt = $this->buildPrompt($review, $scoringPlays, $homeRuns);
+        $prompt = $this->buildPrompt($scoringPlays, $homeRuns);
         $this->logger->info('OpenAI API リクエストを送信します', [
             'model' => 'gpt-4o-mini',
             'prompt_length' => mb_strlen($prompt)
@@ -66,7 +65,7 @@ class AiSummaryService
         }
     }
 
-    private function buildPrompt(string $review, array $scoringPlays, array $homeRuns): string
+    private function buildPrompt(array $scoringPlays, array $homeRuns): string
     {
         $scoringPlaysStr = implode("\n", $scoringPlays);
         $homeRunsStr = implode("\n", $homeRuns);
@@ -83,9 +82,6 @@ class AiSummaryService
 阪神は2点を追う5回裏、大山の適時打などで同点とする。続く6回に、近本の適時打でリードを奪うと、7回には佐藤のソロが飛び出し、貴重な追加点を挙げた。投げては、4番手・湯浅が今季3勝目。敗れた中日は、先発・高橋宏が試合をつくれなかった。
 
 【試合情報】
-■戦評
-{$review}
-
 ■スコアプレー
 {$scoringPlaysStr}
 
