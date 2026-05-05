@@ -31,4 +31,12 @@ class AiSummaryServiceTest extends TestCase
             putenv("OPENAI_KEY_SMALL_CF_APPS=$originalKey");
         }
     }
+
+    public function testNullの戦評を受け入れ可能であること(): void
+    {
+        // 実際のリクエストは送らないが、引数の型チェックとして
+        $result = $this->service->summarize(null, ['play'], ['hr']);
+        // APIキーがない環境では null が返るのが正しい（型エラーにならないことが重要）
+        $this->assertNull($result);
+    }
 }

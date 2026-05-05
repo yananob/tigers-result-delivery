@@ -28,12 +28,12 @@ class AiSummaryService
     /**
      * 試合情報を要約する
      *
-     * @param string $review 戦評
+     * @param string|null $review 戦評
      * @param array $scoringPlays スコアプレー
      * @param array $homeRuns 本塁打
      * @return string|null 要約結果
      */
-    public function summarize(string $review, array $scoringPlays, array $homeRuns): ?string
+    public function summarize(?string $review, array $scoringPlays, array $homeRuns): ?string
     {
         if (!$this->client) {
             $this->logger->warning('OpenAI クライアントが初期化されていないため、要約をスキップします');
@@ -66,10 +66,11 @@ class AiSummaryService
         }
     }
 
-    private function buildPrompt(string $review, array $scoringPlays, array $homeRuns): string
+    private function buildPrompt(?string $review, array $scoringPlays, array $homeRuns): string
     {
         $scoringPlaysStr = implode("\n", $scoringPlays);
         $homeRunsStr = implode("\n", $homeRuns);
+        $reviewStr = $review ?: '（戦評なし）';
 
         return <<<EOT
 以下のプロ野球の試合情報を元に、阪神タイガースファンのための試合要約を150文字程度で作成してください。
@@ -84,7 +85,7 @@ class AiSummaryService
 
 【試合情報】
 ■戦評
-{$review}
+{$reviewStr}
 
 ■スコアプレー
 {$scoringPlaysStr}
