@@ -156,13 +156,26 @@ class YahooScraper
         $plays = [];
         $items = $xpath->query('//li[contains(@class, "bb-scorePlay__item")]');
         foreach ($items as $item) {
-            $inning = $xpath->query('.//p[contains(@class, "bb-scorePlay__inning")]', $item)->item(0);
-            $detail = $xpath->query('.//div[contains(@class, "bb-scorePlay__detail")]/p', $item)->item(0);
+            $inningNode = $xpath->query('.//p[contains(@class, "bb-scorePlay__inning")]', $item)->item(0);
+            if (!$inningNode) {
+                continue;
+            }
 
-            if ($inning && $detail) {
-                $inningText = trim($inning->nodeValue);
-                $detailText = trim(preg_replace('/\s+/', ' ', $detail->nodeValue));
-                $plays[] = "{$inningText}：{$detailText}";
+            $detailNodes = $xpath->query('.//div[contains(@class, "bb-scorePlay__detail")]', $item);
+            $detailTexts = [];
+            foreach ($detailNodes as $detailNode) {
+                $pNodes = $xpath->query('.//p', $detailNode);
+                foreach ($pNodes as $pNode) {
+                    $text = trim(preg_replace('/\s+/', ' ', $pNode->nodeValue));
+                    if ($text !== '') {
+                        $detailTexts[] = $text;
+                    }
+                }
+            }
+
+            if (!empty($detailTexts)) {
+                $inningText = trim($inningNode->nodeValue);
+                $plays[] = "{$inningText}：" . implode(' ', $detailTexts);
             }
         }
         return $plays;
@@ -186,9 +199,13 @@ class YahooScraper
                 $rows = $xpath->query('.//tr', $table);
                 foreach ($rows as $row) {
                     $team = $xpath->query('.//th', $row)->item(0);
-                    $data = $xpath->query('.//td', $row)->item(0);
-                    if ($team && $data && trim($data->nodeValue) !== '') {
-                        $homeRuns[] = trim($team->nodeValue) . "：" . trim($data->nodeValue);
+                    $hrItems = $xpath->query('.//li[contains(@class, "bb-gameLeftTable__homerun")]', $row);
+                    if ($team && $hrItems->length > 0) {
+                        $hrTexts = [];
+                        foreach ($hrItems as $hrItem) {
+                            $hrTexts[] = trim(preg_replace('/\s+/', ' ', $hrItem->nodeValue));
+                        }
+                        $homeRuns[] = trim($team->nodeValue) . "：" . implode(', ', $hrTexts);
                     }
                 }
             }
