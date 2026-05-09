@@ -181,18 +181,21 @@ class NpbGameResultService
 
             $scoringPlays = $this->scraper->getScoringPlays();
             $homeRuns = $this->scraper->getHomeRuns();
+            $pitcherResults = $this->scraper->getPitcherResults();
 
             $this->logger->info('詳細ページからデータを抽出完了', [
                 'scoringPlaysCount' => count($scoringPlays),
                 'homeRunsCount' => count($homeRuns),
+                'pitcherResultsCount' => count($pitcherResults),
             ]);
 
             $result->setScoringPlays($scoringPlays);
             $result->setHomeRuns($homeRuns);
+            $result->setPitcherResults($pitcherResults);
 
             if (!empty($scoringPlays)) {
                 $this->logger->info('AI 要約の生成を開始します');
-                $summary = $this->aiSummaryService->summarize($scoringPlays, $homeRuns);
+                $summary = $this->aiSummaryService->summarize($scoringPlays, $homeRuns, $pitcherResults);
                 $result->setSummary($summary);
                 $this->logger->info('AI 要約の生成結果', ['hasSummary' => !empty($summary)]);
             } else {

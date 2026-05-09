@@ -30,16 +30,17 @@ class AiSummaryService
      *
      * @param array $scoringPlays スコアプレー
      * @param array $homeRuns 本塁打
+     * @param array $pitcherResults 責任投手
      * @return string|null 要約結果
      */
-    public function summarize(array $scoringPlays, array $homeRuns): ?string
+    public function summarize(array $scoringPlays, array $homeRuns, array $pitcherResults = []): ?string
     {
         if (!$this->client) {
             $this->logger->warning('OpenAI クライアントが初期化されていないため、要約をスキップします');
             return null;
         }
 
-        $prompt = $this->buildPrompt($scoringPlays, $homeRuns);
+        $prompt = $this->buildPrompt($scoringPlays, $homeRuns, $pitcherResults);
         $this->logger->info('OpenAI API リクエストを送信します', [
             'model' => 'gpt-4o-mini',
             'prompt_length' => mb_strlen($prompt)
@@ -65,21 +66,28 @@ class AiSummaryService
         }
     }
 
-    private function buildPrompt(array $scoringPlays, array $homeRuns): string
+    private function buildPrompt(array $scoringPlays, array $homeRuns, array $pitcherResults): string
     {
         $scoringPlaysStr = implode("\n", $scoringPlays);
         $homeRunsStr = implode("\n", $homeRuns);
+        $pitcherResultsStr = implode("\n", $pitcherResults);
 
         return <<<EOT
-以下のプロ野球の試合情報を元に、阪神タイガースファンのための試合要約を150文字程度で作成してください。
+以下のプロ野球の試合情報を元に、阪神タイガースファンのための試合要約を250文字程度で作成してください。
 
 要約に含める内容：
-- 主な得点シーン
-- 主なトピック
-- 発生した記録（もしあれば）
+- 試合の展開（誰がいつどのような活躍をしたか詳しく）
+- 決勝打や目立った活躍をした選手名
+- 投手陣の状況（誰が勝ち投手になったか、継投の様子など）
+- 主なトピックや発生した記録（もしあれば）
+
+作成のポイント：
+- 阪神ファンの心に響くような、具体的で臨場感のある内容にしてください。
+- 活躍した選手の名前をできるだけ多く含め、どのようなプレーだったか詳しく記述してください。
+- 150文字ではなく、250文字程度の十分なボリュームで作成してください。
 
 サンプル：
-阪神は2点を追う5回裏、大山の適時打などで同点とする。続く6回に、近本の適時打でリードを奪うと、7回には佐藤のソロが飛び出し、貴重な追加点を挙げた。投げては、4番手・湯浅が今季3勝目。敗れた中日は、先発・高橋宏が試合をつくれなかった。
+阪神は2点を追う5回裏、1死二三塁から大山の左前2点適時打で同点に追いつく。勢いに乗る打線は続く6回、近本がライト線を破る適時三塁打を放ち勝ち越しに成功。7回には佐藤輝がバックスクリーンへ特大のソロ本塁打を叩き込み、リードを広げた。投げては先発の才木が7回2失点の好投で今季5勝目。その後は岩崎、ゲラと繋ぐ完ぺきな継投で逃げ切った。敗れた巨人は、先発の戸郷が中盤に捕まり、打線も阪神の継投の前に沈黙した。
 
 【試合情報】
 ■スコアプレー
@@ -87,6 +95,9 @@ class AiSummaryService
 
 ■本塁打
 {$homeRunsStr}
+
+■責任投手
+{$pitcherResultsStr}
 EOT;
     }
 }
