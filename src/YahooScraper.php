@@ -182,6 +182,38 @@ class YahooScraper
     }
 
     /**
+     * 責任投手情報を取得する
+     * @return string[]
+     */
+    public function getPitcherResults(): array
+    {
+        $doc = new DOMDocument();
+        @$doc->loadHTML('<?xml encoding="UTF-8">' . $this->html);
+        $xpath = new DOMXPath($doc);
+
+        $pitchers = [];
+        $header = $xpath->query('//h2[contains(text(), "責任投手")]')->item(0);
+        if ($header) {
+            $table = $xpath->query('following::table[contains(@class, "bb-gameLeftTable")]', $header)->item(0);
+            if ($table) {
+                $rows = $xpath->query('.//tr', $table);
+                foreach ($rows as $row) {
+                    $role = $xpath->query('.//th', $row)->item(0);
+                    $dataNode = $xpath->query('.//td', $row)->item(0);
+                    if ($role && $dataNode) {
+                        $roleText = trim($role->nodeValue);
+                        $statsText = trim(preg_replace('/\s+/', ' ', $dataNode->nodeValue));
+                        if ($statsText !== '') {
+                            $pitchers[] = "{$roleText}：{$statsText}";
+                        }
+                    }
+                }
+            }
+        }
+        return $pitchers;
+    }
+
+    /**
      * 本塁打情報を取得する
      * @return string[]
      */

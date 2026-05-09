@@ -17,7 +17,8 @@ class GameResult
         private bool $isFinished = false, // 試合が終了したか
         private ?string $summary = null, // AIによる要約
         private array $scoringPlays = [], // スコアプレー
-        private array $homeRuns = []     // 本塁打
+        private array $homeRuns = [],     // 本塁打
+        private array $pitcherResults = [] // 責任投手
     ) {
     }
 
@@ -84,5 +85,15 @@ class GameResult
     public function setHomeRuns(array $homeRuns): void
     {
         $this->homeRuns = $homeRuns;
+    }
+
+    public function getPitcherResults(): array
+    {
+        return $this->pitcherResults;
+    }
+
+    public function setPitcherResults(array $pitcherResults): void
+    {
+        $this->pitcherResults = $pitcherResults;
     }
 }
