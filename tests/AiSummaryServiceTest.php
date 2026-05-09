@@ -23,7 +23,7 @@ class AiSummaryServiceTest extends TestCase
         putenv('OPENAI_KEY_SMALL_CF_APPS');
 
         $service = new AiSummaryService();
-        $result = $service->summarize([], []);
+        $result = $service->summarize([], [], []);
         $this->assertNull($result);
 
         // 元に戻す
@@ -40,7 +40,7 @@ class AiSummaryServiceTest extends TestCase
 
         $service = new AiSummaryService();
         // 実際のリクエストは送らないが、引数の型チェックとして
-        $result = $service->summarize(['play'], ['hr']);
+        $result = $service->summarize(['play'], ['hr'], ['win']);
         // APIキーがない環境では null が返るのが正しい（型エラーにならないことが重要）
         $this->assertNull($result);
 

@@ -102,5 +102,11 @@ class YahooScraperTest extends TestCase
         $this->assertCount(2, $homeRuns);
         $this->assertStringContainsString('ヤクルト：サンタナ 8号(6回表ソロ)', $homeRuns[0]);
         $this->assertStringContainsString('巨人：大城 3号(4回裏3ラン)', $homeRuns[1]);
+
+        $pitchers = $this->scraper->getPitcherResults();
+        $this->assertCount(3, $pitchers);
+        $this->assertStringContainsString('勝利投手：巨人 赤星 (3勝1敗0S)', $pitchers[0]);
+        $this->assertStringContainsString('敗戦投手：ヤクルト 吉村 (2勝4敗0S)', $pitchers[1]);
+        $this->assertStringContainsString('セーブ：巨人 マルティネス (0勝1敗10S)', $pitchers[2]);
     }
 }
