@@ -42,14 +42,14 @@ class AiSummaryService
 
         $prompt = $this->buildPrompt($scoringPlays, $homeRuns, $pitcherResults);
         $this->logger->info('OpenAI API リクエストを送信します', [
-            'model' => 'gpt-4o-mini',
+            'model' => 'gpt-5.4-mini',
             'prompt_length' => mb_strlen($prompt)
         ]);
         $this->logger->debug('OpenAI へのプロンプト', ['prompt' => $prompt]);
 
         try {
             $response = $this->client->chat()->create([
-                'model' => 'gpt-4o-mini',
+                'model' => 'gpt-5.4-mini',
                 'messages' => [
                     ['role' => 'system', 'content' => 'あなたはプロ野球のスポーツライターです。提供された試合情報から、簡潔で魅力的な要約を作成してください。'],
                     ['role' => 'user', 'content' => $prompt],
