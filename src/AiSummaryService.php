@@ -56,7 +56,6 @@ class AiSummaryService
                     ['role' => 'system', 'content' => 'あなたはプロのスポーツニュースキャスターです。落ち着いたトーンで、正確かつ分かりやすく試合のハイライトを伝えてください。'],
                     ['role' => 'user', 'content' => $prompt],
                 ],
-                'temperature' => 0.7,
             ]);
 
             $summary = $response->choices[0]->message->content;
