@@ -49,4 +49,27 @@ class AiSummaryServiceTest extends TestCase
             putenv("OPENAI_KEY_SMALL_CF_APPS=$originalKey");
         }
     }
+
+    public function testBuildPrompt(): void
+    {
+        $service = new AiSummaryService();
+        $reflector = new \ReflectionClass(AiSummaryService::class);
+        $method = $reflector->getMethod('buildPrompt');
+        $method->setAccessible(true);
+
+        $scoringPlays = ['1回大山適時打'];
+        $homeRuns = ['佐藤輝1号'];
+        $pitcherResults = ['勝：才木'];
+
+        $prompt = $method->invoke($service, $scoringPlays, $homeRuns, $pitcherResults);
+
+        $this->assertStringContainsString('「です・ます」調', $prompt);
+        $this->assertStringContainsString('「〜あった」「〜だった」「〜した」「〜である」などの常体', $prompt);
+        $this->assertStringContainsString('勝投手など、提供された情報に存在しない項目や内容についての言及', $prompt);
+        $this->assertStringContainsString('放った。', $prompt);
+        $this->assertStringContainsString('成功した。', $prompt);
+        $this->assertStringContainsString('広げた。', $prompt);
+        $this->assertStringContainsString('挙げた。', $prompt);
+        $this->assertStringContainsString('収めた。', $prompt);
+    }
 }
