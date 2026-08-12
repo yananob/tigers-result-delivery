@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   deploy:
-    uses: yananob/cloud-functions-common/.github/workflows/deploy-cloud-functions.yaml@main
+    uses: yananob/myapps-common/.github/workflows/deploy-cloud-functions.yaml@main
     with:
       function_name: tigers-result-delivery
       service_account_name: 'cloud-run-functions-deployer'
