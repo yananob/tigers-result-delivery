@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dbcbf0244f2ab923bdb82e29abec260f",
+    "content-hash": "a959d724bbcc01a727a56f14e7022397",
     "packages": [
         {
             "name": "brick/math",
@@ -323,16 +323,16 @@
         },
         {
             "name": "google/cloud-core",
-            "version": "v1.73.1",
+            "version": "v1.73.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/google-cloud-php-core.git",
-                "reference": "23f6a68674f07bc23d02a683405cd9d2d283688a"
+                "reference": "883bc97bdcd5e09552eb82cb47a752271a310c7a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/google-cloud-php-core/zipball/23f6a68674f07bc23d02a683405cd9d2d283688a",
-                "reference": "23f6a68674f07bc23d02a683405cd9d2d283688a",
+                "url": "https://api.github.com/repos/googleapis/google-cloud-php-core/zipball/883bc97bdcd5e09552eb82cb47a752271a310c7a",
+                "reference": "883bc97bdcd5e09552eb82cb47a752271a310c7a",
                 "shasum": ""
             },
             "require": {
@@ -384,38 +384,39 @@
             ],
             "description": "Google Cloud PHP shared dependency, providing functionality useful to all components.",
             "support": {
-                "source": "https://github.com/googleapis/google-cloud-php-core/tree/v1.73.1"
+                "source": "https://github.com/googleapis/google-cloud-php-core/tree/v1.73.2"
             },
-            "time": "2026-08-07T09:39:23+00:00"
+            "time": "2026-08-14T23:32:22+00:00"
         },
         {
             "name": "google/cloud-firestore",
-            "version": "v1.55.0",
+            "version": "v2.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/google-cloud-php-firestore.git",
-                "reference": "bf714e7f8d0ca2f55e7cc4e59da792e62cab7d92"
+                "reference": "ab4a13b12490ce559b0112ae54d76cfbb62175e4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/google-cloud-php-firestore/zipball/bf714e7f8d0ca2f55e7cc4e59da792e62cab7d92",
-                "reference": "bf714e7f8d0ca2f55e7cc4e59da792e62cab7d92",
+                "url": "https://api.github.com/repos/googleapis/google-cloud-php-firestore/zipball/ab4a13b12490ce559b0112ae54d76cfbb62175e4",
+                "reference": "ab4a13b12490ce559b0112ae54d76cfbb62175e4",
                 "shasum": ""
             },
             "require": {
                 "ext-grpc": "*",
-                "google/cloud-core": "^1.57",
+                "google/cloud-core": "^1.68.2",
                 "google/gax": "^1.38.0",
                 "php": "^8.1",
                 "ramsey/uuid": "^3.0|^4.0"
             },
             "require-dev": {
+                "dg/bypass-finals": "^1.9",
                 "erusev/parsedown": "^1.6",
                 "phpdocumentor/reflection": "^5.3.3||^6.0",
-                "phpdocumentor/reflection-docblock": "^5.3",
+                "phpdocumentor/reflection-docblock": "^5.3.3||^6.0",
                 "phpspec/prophecy-phpunit": "^2.0",
                 "phpunit/phpunit": "^9.0",
-                "squizlabs/php_codesniffer": "2.*"
+                "squizlabs/php_codesniffer": "3.*"
             },
             "suggest": {
                 "ext-protobuf": "Provides a significant increase in throughput over the pure PHP protobuf implementation. See https://cloud.google.com/php/grpc for installation instructions."
@@ -441,9 +442,9 @@
             ],
             "description": "Cloud Firestore Client for PHP",
             "support": {
-                "source": "https://github.com/googleapis/google-cloud-php-firestore/tree/v1.55.0"
+                "source": "https://github.com/googleapis/google-cloud-php-firestore/tree/v2.3.0"
             },
-            "time": "2025-12-13T02:51:17+00:00"
+            "time": "2026-08-10T16:39:50+00:00"
         },
         {
             "name": "google/cloud-functions-framework",
@@ -553,16 +554,16 @@
         },
         {
             "name": "google/gax",
-            "version": "v1.47.1",
+            "version": "v1.48.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/gax-php.git",
-                "reference": "0c25a2499a7204bee09e3cb28437a391d85976e5"
+                "reference": "637096f2c70f6bc903ba24aee3a0d974d739aba8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/gax-php/zipball/0c25a2499a7204bee09e3cb28437a391d85976e5",
-                "reference": "0c25a2499a7204bee09e3cb28437a391d85976e5",
+                "url": "https://api.github.com/repos/googleapis/gax-php/zipball/637096f2c70f6bc903ba24aee3a0d974d739aba8",
+                "reference": "637096f2c70f6bc903ba24aee3a0d974d739aba8",
                 "shasum": ""
             },
             "require": {
@@ -611,9 +612,9 @@
             ],
             "support": {
                 "issues": "https://github.com/googleapis/gax-php/issues",
-                "source": "https://github.com/googleapis/gax-php/tree/v1.47.1"
+                "source": "https://github.com/googleapis/gax-php/tree/v1.48.0"
             },
-            "time": "2026-08-10T16:39:50+00:00"
+            "time": "2026-08-14T23:32:22+00:00"
         },
         {
             "name": "google/grpc-gcp",
@@ -662,16 +663,16 @@
         },
         {
             "name": "google/longrunning",
-            "version": "0.8.0",
+            "version": "0.8.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/php-longrunning.git",
-                "reference": "2c22ca5184cba320f5e7e012261b82bdc969a4f6"
+                "reference": "309705016290679e6fe14b727f4b1a3e04ae52f4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/php-longrunning/zipball/2c22ca5184cba320f5e7e012261b82bdc969a4f6",
-                "reference": "2c22ca5184cba320f5e7e012261b82bdc969a4f6",
+                "url": "https://api.github.com/repos/googleapis/php-longrunning/zipball/309705016290679e6fe14b727f4b1a3e04ae52f4",
+                "reference": "309705016290679e6fe14b727f4b1a3e04ae52f4",
                 "shasum": ""
             },
             "require-dev": {
@@ -700,9 +701,9 @@
             ],
             "description": "Google LongRunning Client for PHP",
             "support": {
-                "source": "https://github.com/googleapis/php-longrunning/tree/v0.8.0"
+                "source": "https://github.com/googleapis/php-longrunning/tree/v0.8.1"
             },
-            "time": "2026-08-10T16:39:50+00:00"
+            "time": "2026-08-14T23:32:22+00:00"
         },
         {
             "name": "google/protobuf",
