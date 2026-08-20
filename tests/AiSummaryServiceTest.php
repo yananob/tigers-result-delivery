@@ -66,6 +66,7 @@ class AiSummaryServiceTest extends TestCase
         $this->assertStringContainsString('「です・ます」調', $prompt);
         $this->assertStringContainsString('「〜あった」「〜だった」「〜した」「〜である」などの常体', $prompt);
         $this->assertStringContainsString('勝投手など、提供された情報に存在しない項目や内容についての言及', $prompt);
+        $this->assertStringContainsString('誰が行ったプレーか', $prompt);
         $this->assertStringContainsString('放った。', $prompt);
         $this->assertStringContainsString('成功した。', $prompt);
         $this->assertStringContainsString('広げた。', $prompt);
