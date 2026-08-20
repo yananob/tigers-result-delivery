@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5d3c3ec91e3c083fbc19b4d1070ea38b",
+    "content-hash": "3f615dee8b1d7fa74cf3276e7502d2ee",
     "packages": [
         {
             "name": "brick/math",
@@ -1391,16 +1391,16 @@
         },
         {
             "name": "openai-php/client",
-            "version": "v0.19.2",
+            "version": "v0.20.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/openai-php/client.git",
-                "reference": "12e3513527e22d5657f4f9809796f8fe254fd0a9"
+                "reference": "de32ca459d5810d3c80989bc16fb0412f5095ae4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/openai-php/client/zipball/12e3513527e22d5657f4f9809796f8fe254fd0a9",
-                "reference": "12e3513527e22d5657f4f9809796f8fe254fd0a9",
+                "url": "https://api.github.com/repos/openai-php/client/zipball/de32ca459d5810d3c80989bc16fb0412f5095ae4",
+                "reference": "de32ca459d5810d3c80989bc16fb0412f5095ae4",
                 "shasum": ""
             },
             "require": {
@@ -1462,7 +1462,7 @@
             ],
             "support": {
                 "issues": "https://github.com/openai-php/client/issues",
-                "source": "https://github.com/openai-php/client/tree/v0.19.2"
+                "source": "https://github.com/openai-php/client/tree/v0.20.1"
             },
             "funding": [
                 {
@@ -1478,7 +1478,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-04-19T20:35:01+00:00"
+            "time": "2026-07-20T11:03:21+00:00"
         },
         {
             "name": "paquettg/php-html-parser",
