@@ -1,13 +1,13 @@
 parameters:
     level: 5
     paths:
-        - .
+        - src
+        - tests
     excludePaths:
-        - vendor
-        - node_modules (?)
+        - cache (?)
         - templates_c (?)
         - _deploy (?)
         - _template (?)
-        - _cf-common (?)
+        - _myapps-common (?)
 
     treatPhpDocTypesAsCertain: false
