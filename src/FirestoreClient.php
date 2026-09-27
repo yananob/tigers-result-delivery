@@ -26,9 +26,7 @@ class FirestoreClient
     public static function getInstance(): GoogleFirestoreClient
     {
         if (self::$instance === null) {
-            self::$instance = new GoogleFirestoreClient([
-                "keyFile" => json_decode(getenv("FIREBASE_SERVICE_ACCOUNT"), true)
-            ]);
+            self::$instance = new GoogleFirestoreClient();
         }
 
         return self::$instance;
