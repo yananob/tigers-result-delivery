@@ -10,7 +10,7 @@ use Monolog\Logger;
  */
 class AiSummaryService
 {
-    private const DEFAULT_MODEL = 'gpt-5.6-luna';
+    private const DEFAULT_MODEL = 'gpt-6-luna';
 
     private $client;
     private Logger $logger;
