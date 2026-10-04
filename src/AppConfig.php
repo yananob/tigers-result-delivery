@@ -20,7 +20,8 @@ class AppConfig
      */
     public static function getEnvironment(): string
     {
-        return getenv('APP_ENV');
+        $env = getenv('APP_ENV');
+        return is_string($env) && $env !== '' ? $env : 'development';
     }
 
     /**
