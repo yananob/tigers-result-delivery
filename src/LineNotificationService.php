@@ -18,7 +18,7 @@ class LineNotificationService
     private Client $httpClient;
     private Logger $logger;
 
-    public function __construct()
+    public function __construct(?Client $httpClient = null)
     {
         $this->logger = LoggerFactory::getLogger();
 
@@ -27,18 +27,22 @@ class LineNotificationService
         $botName = AppConfig::getLineDeliverTarget();
         $this->logger->debug('LINE Bot 設定を読み込み', ['botName' => $botName]);
 
-        $lineConfig = json_decode(getenv("LINE_TOKENS_N_TARGETS"), true);
-        $this->botToken = $lineConfig["tokens"][$botName];
-        $this->userId = $lineConfig["target_ids"][$botName];
-        // $line = new Line($lineConfig["tokens"], $lineConfig["target_ids"]);
-        $this->httpClient = new Client();
+        $rawTokens = getenv("LINE_TOKENS_N_TARGETS");
+        $lineConfig = is_string($rawTokens) ? json_decode($rawTokens, true) : null;
+        if (!is_array($lineConfig)) {
+            $lineConfig = [];
+        }
 
-        if (!$this->botToken) {
+        $this->botToken = $lineConfig["tokens"][$botName] ?? '';
+        $this->userId = $lineConfig["target_ids"][$botName] ?? '';
+        $this->httpClient = $httpClient ?? new Client();
+
+        if ($this->botToken === '') {
             $this->logger->error('LINE Bot トークンが設定されていません');
             throw new \RuntimeException('LINE_BOT_TOKEN 環境変数が設定されていません');
         }
 
-        if (!$this->userId) {
+        if ($this->userId === '') {
             $this->logger->error('LINE User ID が設定されていません');
             throw new \RuntimeException('LINE_USER_ID 環境変数が設定されていません');
         }

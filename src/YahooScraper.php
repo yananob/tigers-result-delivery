@@ -3,16 +3,18 @@
 namespace App;
 
 use DOMDocument;
-use DOMXPath;
 use DOMNode;
+use DOMXPath;
 
 class YahooScraper
 {
-    private string $html;
+    private ?DOMXPath $xpath = null;
 
     public function loadHtml(string $html): void
     {
-        $this->html = $html;
+        $doc = new DOMDocument();
+        @$doc->loadHTML('<?xml encoding="UTF-8">' . $html);
+        $this->xpath = new DOMXPath($doc);
     }
 
     /**
@@ -21,14 +23,18 @@ class YahooScraper
      */
     public function findGameNode(string $target_date, string $team_name): ?DOMNode
     {
-        $doc = new DOMDocument();
-        @$doc->loadHTML('<?xml encoding="UTF-8">' . $this->html);
-        $xpath = new DOMXPath($doc);
+        if ($this->xpath === null) {
+            return null;
+        }
 
-        $game_items = $xpath->query('//li[contains(@class, "bb-scoreList__item")]');
+        $game_items = $this->xpath->query('//li[contains(@class, "bb-scoreList__item")]');
+        if ($game_items === false) {
+            return null;
+        }
+
         foreach ($game_items as $item) {
             // 日付のチェック
-            $date_node = $xpath->query('.//span[contains(@class, "bb-scoreList__date")]', $item)->item(0);
+            $date_node = $this->xpath->query('.//span[contains(@class, "bb-scoreList__date")]', $item)->item(0);
             if (!$date_node) {
                 continue;
             }
@@ -45,12 +51,12 @@ class YahooScraper
             }
 
             // チーム名のチェック
-            $home_team = $xpath->query('.//p[contains(@class, "bb-scoreList__homeName")]', $item)->item(0);
-            $away_team = $xpath->query('.//p[contains(@class, "bb-scoreList__awayName")]', $item)->item(0);
+            $home_team = $this->xpath->query('.//p[contains(@class, "bb-scoreList__homeName")]', $item)->item(0);
+            $away_team = $this->xpath->query('.//p[contains(@class, "bb-scoreList__awayName")]', $item)->item(0);
 
             if (
-                ($home_team && strpos($home_team->nodeValue, $team_name) !== false) ||
-                ($away_team && strpos($away_team->nodeValue, $team_name) !== false)
+                ($home_team && str_contains($home_team->nodeValue, $team_name)) ||
+                ($away_team && str_contains($away_team->nodeValue, $team_name))
             ) {
                 return $item;
             }
@@ -61,7 +67,7 @@ class YahooScraper
 
     public function getScoreLink(DOMNode $game_node): ?string
     {
-        $xpath = new DOMXPath($game_node->ownerDocument);
+        $xpath = $this->getXpathForNode($game_node);
         $link_node = $xpath->query('.//a[contains(@class, "bb-scoreList__card")]', $game_node)->item(0);
 
         if ($link_node instanceof \DOMElement) {
@@ -72,15 +78,15 @@ class YahooScraper
 
     public function getOpponentTeamName(DOMNode $game_node, string $ally_team_name): ?string
     {
-        $xpath = new DOMXPath($game_node->ownerDocument);
+        $xpath = $this->getXpathForNode($game_node);
         $home_team = $xpath->query('.//p[contains(@class, "bb-scoreList__homeName")]', $game_node)->item(0);
         $away_team = $xpath->query('.//p[contains(@class, "bb-scoreList__awayName")]', $game_node)->item(0);
 
-        if ($home_team && strpos($home_team->nodeValue, $ally_team_name) !== false) {
+        if ($home_team && str_contains($home_team->nodeValue, $ally_team_name)) {
             return $away_team ? trim($away_team->nodeValue) : null;
         }
 
-        if ($away_team && strpos($away_team->nodeValue, $ally_team_name) !== false) {
+        if ($away_team && str_contains($away_team->nodeValue, $ally_team_name)) {
             return $home_team ? trim($home_team->nodeValue) : null;
         }
 
@@ -89,10 +95,10 @@ class YahooScraper
 
     public function getAllyScore(DOMNode $game_node, string $ally_team_name): ?string
     {
-        $xpath = new DOMXPath($game_node->ownerDocument);
+        $xpath = $this->getXpathForNode($game_node);
         $home_team = $xpath->query('.//p[contains(@class, "bb-scoreList__homeName")]', $game_node)->item(0);
 
-        if ($home_team && strpos($home_team->nodeValue, $ally_team_name) !== false) {
+        if ($home_team && str_contains($home_team->nodeValue, $ally_team_name)) {
             $score_node = $xpath->query('.//span[contains(@class, "bb-scoreList__homeScore")]', $game_node)->item(0);
         } else {
             $score_node = $xpath->query('.//span[contains(@class, "bb-scoreList__awayScore")]', $game_node)->item(0);
@@ -103,10 +109,10 @@ class YahooScraper
 
     public function getOpponentScore(DOMNode $game_node, string $ally_team_name): ?string
     {
-        $xpath = new DOMXPath($game_node->ownerDocument);
+        $xpath = $this->getXpathForNode($game_node);
         $home_team = $xpath->query('.//p[contains(@class, "bb-scoreList__homeName")]', $game_node)->item(0);
 
-        if ($home_team && strpos($home_team->nodeValue, $ally_team_name) !== false) {
+        if ($home_team && str_contains($home_team->nodeValue, $ally_team_name)) {
             $score_node = $xpath->query('.//span[contains(@class, "bb-scoreList__awayScore")]', $game_node)->item(0);
         } else {
             $score_node = $xpath->query('.//span[contains(@class, "bb-scoreList__homeScore")]', $game_node)->item(0);
@@ -117,11 +123,11 @@ class YahooScraper
 
     public function isGameFinished(DOMNode $game_node): bool
     {
-        $xpath = new DOMXPath($game_node->ownerDocument);
+        $xpath = $this->getXpathForNode($game_node);
         $state_node = $xpath->query('.//p[contains(@class, "bb-scoreList__state")]', $game_node)->item(0);
 
         if ($state_node) {
-            return strpos($state_node->nodeValue, '試合終了') !== false;
+            return str_contains($state_node->nodeValue, '試合終了');
         }
 
         return false;
@@ -132,12 +138,12 @@ class YahooScraper
      */
     public function getGameReview(): ?string
     {
-        $doc = new DOMDocument();
-        @$doc->loadHTML('<?xml encoding="UTF-8">' . $this->html);
-        $xpath = new DOMXPath($doc);
+        if ($this->xpath === null) {
+            return null;
+        }
 
-        $nodes = $xpath->query('//h2[contains(text(), "戦評")]/following::p[contains(@class, "bb-paragraph")]');
-        if ($nodes->length > 0) {
+        $nodes = $this->xpath->query('//h2[contains(text(), "戦評")]/following::p[contains(@class, "bb-paragraph")]');
+        if ($nodes && $nodes->length > 0) {
             return trim($nodes->item(0)->nodeValue);
         }
         return null;
@@ -149,26 +155,34 @@ class YahooScraper
      */
     public function getScoringPlays(): array
     {
-        $doc = new DOMDocument();
-        @$doc->loadHTML('<?xml encoding="UTF-8">' . $this->html);
-        $xpath = new DOMXPath($doc);
+        if ($this->xpath === null) {
+            return [];
+        }
 
         $plays = [];
-        $items = $xpath->query('//li[contains(@class, "bb-scorePlay__item")]');
+        $items = $this->xpath->query('//li[contains(@class, "bb-scorePlay__item")]');
+        if (!$items) {
+            return [];
+        }
+
         foreach ($items as $item) {
-            $inningNode = $xpath->query('.//p[contains(@class, "bb-scorePlay__inning")]', $item)->item(0);
+            $inningNode = $this->xpath->query('.//p[contains(@class, "bb-scorePlay__inning")]', $item)->item(0);
             if (!$inningNode) {
                 continue;
             }
 
-            $detailNodes = $xpath->query('.//div[contains(@class, "bb-scorePlay__detail")]', $item);
+            $detailNodes = $this->xpath->query('.//div[contains(@class, "bb-scorePlay__detail")]', $item);
             $detailTexts = [];
-            foreach ($detailNodes as $detailNode) {
-                $pNodes = $xpath->query('.//p', $detailNode);
-                foreach ($pNodes as $pNode) {
-                    $text = trim(preg_replace('/\s+/', ' ', $pNode->nodeValue));
-                    if ($text !== '') {
-                        $detailTexts[] = $text;
+            if ($detailNodes) {
+                foreach ($detailNodes as $detailNode) {
+                    $pNodes = $this->xpath->query('.//p', $detailNode);
+                    if ($pNodes) {
+                        foreach ($pNodes as $pNode) {
+                            $text = trim(preg_replace('/\s+/', ' ', $pNode->nodeValue) ?? '');
+                            if ($text !== '') {
+                                $detailTexts[] = $text;
+                            }
+                        }
                     }
                 }
             }
@@ -187,24 +201,26 @@ class YahooScraper
      */
     public function getPitcherResults(): array
     {
-        $doc = new DOMDocument();
-        @$doc->loadHTML('<?xml encoding="UTF-8">' . $this->html);
-        $xpath = new DOMXPath($doc);
+        if ($this->xpath === null) {
+            return [];
+        }
 
         $pitchers = [];
-        $header = $xpath->query('//h2[contains(text(), "責任投手")]')->item(0);
+        $header = $this->xpath->query('//h2[contains(text(), "責任投手")]')->item(0);
         if ($header) {
-            $table = $xpath->query('following::table[contains(@class, "bb-gameLeftTable")]', $header)->item(0);
+            $table = $this->xpath->query('following::table[contains(@class, "bb-gameLeftTable")]', $header)->item(0);
             if ($table) {
-                $rows = $xpath->query('.//tr', $table);
-                foreach ($rows as $row) {
-                    $role = $xpath->query('.//th', $row)->item(0);
-                    $dataNode = $xpath->query('.//td', $row)->item(0);
-                    if ($role && $dataNode) {
-                        $roleText = trim($role->nodeValue);
-                        $statsText = trim(preg_replace('/\s+/', ' ', $dataNode->nodeValue));
-                        if ($statsText !== '') {
-                            $pitchers[] = "{$roleText}：{$statsText}";
+                $rows = $this->xpath->query('.//tr', $table);
+                if ($rows) {
+                    foreach ($rows as $row) {
+                        $role = $this->xpath->query('.//th', $row)->item(0);
+                        $dataNode = $this->xpath->query('.//td', $row)->item(0);
+                        if ($role && $dataNode) {
+                            $roleText = trim($role->nodeValue);
+                            $statsText = trim(preg_replace('/\s+/', ' ', $dataNode->nodeValue) ?? '');
+                            if ($statsText !== '') {
+                                $pitchers[] = "{$roleText}：{$statsText}";
+                            }
                         }
                     }
                 }
@@ -219,29 +235,39 @@ class YahooScraper
      */
     public function getHomeRuns(): array
     {
-        $doc = new DOMDocument();
-        @$doc->loadHTML('<?xml encoding="UTF-8">' . $this->html);
-        $xpath = new DOMXPath($doc);
+        if ($this->xpath === null) {
+            return [];
+        }
 
         $homeRuns = [];
-        $header = $xpath->query('//h2[contains(text(), "本塁打")]')->item(0);
+        $header = $this->xpath->query('//h2[contains(text(), "本塁打")]')->item(0);
         if ($header) {
-            $table = $xpath->query('following::table[contains(@class, "bb-gameLeftTable")]', $header)->item(0);
+            $table = $this->xpath->query('following::table[contains(@class, "bb-gameLeftTable")]', $header)->item(0);
             if ($table) {
-                $rows = $xpath->query('.//tr', $table);
-                foreach ($rows as $row) {
-                    $team = $xpath->query('.//th', $row)->item(0);
-                    $hrItems = $xpath->query('.//li[contains(@class, "bb-gameLeftTable__homerun")]', $row);
-                    if ($team && $hrItems->length > 0) {
-                        $hrTexts = [];
-                        foreach ($hrItems as $hrItem) {
-                            $hrTexts[] = trim(preg_replace('/\s+/', ' ', $hrItem->nodeValue));
+                $rows = $this->xpath->query('.//tr', $table);
+                if ($rows) {
+                    foreach ($rows as $row) {
+                        $team = $this->xpath->query('.//th', $row)->item(0);
+                        $hrItems = $this->xpath->query('.//li[contains(@class, "bb-gameLeftTable__homerun")]', $row);
+                        if ($team && $hrItems && $hrItems->length > 0) {
+                            $hrTexts = [];
+                            foreach ($hrItems as $hrItem) {
+                                $hrTexts[] = trim(preg_replace('/\s+/', ' ', $hrItem->nodeValue) ?? '');
+                            }
+                            $homeRuns[] = trim($team->nodeValue) . "：" . implode(', ', $hrTexts);
                         }
-                        $homeRuns[] = trim($team->nodeValue) . "：" . implode(', ', $hrTexts);
                     }
                 }
             }
         }
         return $homeRuns;
+    }
+
+    private function getXpathForNode(DOMNode $node): DOMXPath
+    {
+        if ($this->xpath !== null) {
+            return $this->xpath;
+        }
+        return new DOMXPath($node->ownerDocument ?? new DOMDocument());
     }
 }
