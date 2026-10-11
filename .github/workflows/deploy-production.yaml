@@ -39,3 +39,7 @@ jobs:
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
       GCP_REGION: ${{ secrets.GCP_REGION }}
       GCP_PROJECT_NUMBER: ${{ secrets.GCP_PROJECT_NUMBER }}
+
+  create-tag:
+    needs: [deploy]
+    uses: yananob/myapps-common/.github/workflows/create-release-tag.yml@main
