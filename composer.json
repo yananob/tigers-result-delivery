@@ -3,7 +3,7 @@
     "description": "yananob/tigers-result-delivery",
     "license": "proprietary",
     "require": {
-        "php": "~8.2.0",
+        "php": "~8.4.0",
         "google/cloud-functions-framework": "^1.4",
         "google/cloud-firestore": "^2.3.1",
         "guzzlehttp/guzzle": "^7.10",
@@ -32,7 +32,7 @@
             "php-http/discovery": true
         },
         "platform": {
-            "php": "8.2"
+            "php": "8.4"
         }
     }
 }
