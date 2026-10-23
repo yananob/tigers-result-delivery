@@ -2,15 +2,34 @@
 
 require_once 'vendor/autoload.php';
 
+use Google\CloudFunctions\FunctionsFramework;
 use Google\CloudFunctions\CloudEvent;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use App\NpbGameResultService;
 use App\LineNotificationService;
 use App\NotificationHistoryService;
+use App\HttpHandler;
 use App\LoggerFactory;
 use Carbon\Carbon;
 
+FunctionsFramework::http('main_http', 'main_http');
+
 /**
- * Cloud Functionsのエントリーポイント
+ * Cloud Functions HTTP エントリーポイント
+ *
+ * @param ServerRequestInterface $request
+ * @return ResponseInterface
+ */
+function main_http(ServerRequestInterface $request): ResponseInterface
+{
+    return (new HttpHandler())->handle($request);
+}
+
+FunctionsFramework::cloudEvent('main_event', 'main_event');
+
+/**
+ * Cloud Functions Event エントリーポイント
  *
  * Pub/Sub イベントをトリガーとして、本日の阪神の試合情報を取得し LINE で通知します
  *

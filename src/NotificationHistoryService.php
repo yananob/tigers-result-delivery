@@ -3,7 +3,8 @@
 namespace App;
 
 use Carbon\Carbon;
-use Google\Cloud\Firestore\DocumentSnapshot;
+use Google\Cloud\Core\Timestamp as GoogleCoreTimestamp;
+use Google\Cloud\Firestore\FirestoreClient as GoogleFirestoreClient;
 use Monolog\Logger;
 
 /**
@@ -15,10 +16,17 @@ use Monolog\Logger;
 class NotificationHistoryService
 {
     private Logger $logger;
+    private ?GoogleFirestoreClient $firestoreClient;
 
-    public function __construct()
+    public function __construct(?GoogleFirestoreClient $firestoreClient = null)
     {
         $this->logger = LoggerFactory::getLogger();
+        $this->firestoreClient = $firestoreClient;
+    }
+
+    private function getClient(): GoogleFirestoreClient
+    {
+        return $this->firestoreClient ?? FirestoreClient::getInstance();
     }
 
     private static function getCollectionPath(): string
@@ -37,7 +45,7 @@ class NotificationHistoryService
         $this->logger->debug('通知済み状態を確認', ['date' => $date]);
 
         try {
-            $firestoreClient = FirestoreClient::getInstance();
+            $firestoreClient = $this->getClient();
             $documentReference = $firestoreClient->collection(self::getCollectionPath())->document($date);
             $documentSnapshot = $documentReference->snapshot();
 
@@ -81,7 +89,7 @@ class NotificationHistoryService
         ]);
 
         try {
-            $firestoreClient = FirestoreClient::getInstance();
+            $firestoreClient = $this->getClient();
             $documentReference = $firestoreClient->collection(self::getCollectionPath())->document($date);
 
             $documentReference->set([
@@ -103,5 +111,93 @@ class NotificationHistoryService
             ]);
             return false;
         }
+    }
+
+    /**
+     * 直近の処理履歴を取得
+     *
+     * @param int $days 取得日数（デフォルト7日）
+     * @param Carbon|null $baseDate 基準日時（指定しない場合は現在日時 JST）
+     * @return array<int, array{
+     *     date: string,
+     *     formatted_date: string,
+     *     is_notified: bool,
+     *     status_label: string,
+     *     timestamp: string
+     * }>
+     */
+    public function getRecentHistory(int $days = 7, ?Carbon $baseDate = null): array
+    {
+        $now = $baseDate !== null ? $baseDate->copy()->setTimezone('Asia/Tokyo') : Carbon::now('Asia/Tokyo');
+        $weekDays = ['日', '月', '火', '水', '木', '金', '土'];
+        $history = [];
+
+        for ($i = 0; $i < $days; $i++) {
+            $currentDate = $now->copy()->subDays($i);
+            $dateString = $currentDate->format('Y-m-d');
+            $dayOfWeek = $weekDays[$currentDate->dayOfWeek];
+            $formattedDate = $currentDate->format('Y-m-d') . " ({$dayOfWeek})";
+
+            $isNotified = false;
+            $timestampString = '-';
+
+            try {
+                $firestoreClient = $this->getClient();
+                $documentReference = $firestoreClient->collection(self::getCollectionPath())->document($dateString);
+                $documentSnapshot = $documentReference->snapshot();
+
+                if ($documentSnapshot->exists()) {
+                    $data = $documentSnapshot->data();
+                    $isNotified = (bool)($data['is_notified'] ?? false);
+                    $timestampString = $this->formatTimestamp($data['timestamp'] ?? null);
+                }
+            } catch (\Exception $e) {
+                $this->logger->error('Firestore から履歴取得中にエラーが発生', [
+                    'date' => $dateString,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            $history[] = [
+                'date' => $dateString,
+                'formatted_date' => $formattedDate,
+                'is_notified' => $isNotified,
+                'status_label' => $isNotified ? '通知済み' : '未通知',
+                'timestamp' => $timestampString,
+            ];
+        }
+
+        return $history;
+    }
+
+    /**
+     * タイムスタンプのデータ型に応じたフォーマット変換
+     *
+     * @param mixed $timestampData
+     * @return string
+     */
+    private function formatTimestamp(mixed $timestampData): string
+    {
+        if ($timestampData === null) {
+            return '-';
+        }
+
+        if ($timestampData instanceof GoogleCoreTimestamp) {
+            return Carbon::instance($timestampData->get())->setTimezone('Asia/Tokyo')->format('Y-m-d H:i:s');
+        }
+
+        if ($timestampData instanceof \DateTimeInterface) {
+            return Carbon::instance($timestampData)->setTimezone('Asia/Tokyo')->format('Y-m-d H:i:s');
+        }
+
+        if (is_string($timestampData)) {
+            try {
+                return Carbon::parse($timestampData)->setTimezone('Asia/Tokyo')->format('Y-m-d H:i:s');
+            } catch (\Exception $e) {
+                return $timestampData;
+            }
+        }
+
+        return '-';
     }
 }
