@@ -11,7 +11,8 @@
         "paquettg/php-html-parser": "^2.2",
         "openai-php/client": "^0.21.0",
         "http-interop/http-factory-guzzle": "^1.2",
-        "monolog/monolog": "^3.10"
+        "monolog/monolog": "^3.10",
+        "eftec/bladeone": "^4.19"
     },
     "require-dev": {
         "phpunit/phpunit": "^11.5",
