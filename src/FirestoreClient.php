@@ -26,7 +26,9 @@ class FirestoreClient
     public static function getInstance(): GoogleFirestoreClient
     {
         if (self::$instance === null) {
-            self::$instance = new GoogleFirestoreClient();
+            self::$instance = new GoogleFirestoreClient([
+                'transport' => 'rest',
+            ]);
         }
 
         return self::$instance;
