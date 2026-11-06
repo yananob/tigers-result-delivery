@@ -132,35 +132,46 @@ class NotificationHistoryService
         $weekDays = ['日', '月', '火', '水', '木', '金', '土'];
         $history = [];
 
+        // 過去の日付マップを作成
+        $targetDates = [];
         for ($i = 0; $i < $days; $i++) {
             $currentDate = $now->copy()->subDays($i);
             $dateString = $currentDate->format('Y-m-d');
             $dayOfWeek = $weekDays[$currentDate->dayOfWeek];
-            $formattedDate = $currentDate->format('Y-m-d') . " ({$dayOfWeek})";
+            $formattedDate = "{$dateString} ({$dayOfWeek})";
 
-            $isNotified = false;
-            $timestampString = '-';
+            $targetDates[$dateString] = [
+                'formatted_date' => $formattedDate,
+            ];
+        }
 
+        // Firestore からドキュメントを日付ごとに取得
+        $records = [];
+        $firestoreClient = $this->getClient();
+        $collection = $firestoreClient->collection(self::getCollectionPath());
+
+        foreach (array_keys($targetDates) as $dateString) {
             try {
-                $firestoreClient = $this->getClient();
-                $documentReference = $firestoreClient->collection(self::getCollectionPath())->document($dateString);
-                $documentSnapshot = $documentReference->snapshot();
-
+                $documentSnapshot = $collection->document($dateString)->snapshot();
                 if ($documentSnapshot->exists()) {
-                    $data = $documentSnapshot->data();
-                    $isNotified = (bool)($data['is_notified'] ?? false);
-                    $timestampString = $this->formatTimestamp($data['timestamp'] ?? null);
+                    $records[$dateString] = $documentSnapshot->data();
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $this->logger->error('Firestore から履歴取得中にエラーが発生', [
                     'date' => $dateString,
                     'error' => $e->getMessage(),
                 ]);
             }
+        }
+
+        foreach ($targetDates as $dateString => $meta) {
+            $data = $records[$dateString] ?? null;
+            $isNotified = (bool)($data['is_notified'] ?? false);
+            $timestampString = $this->formatTimestamp($data['timestamp'] ?? null);
 
             $history[] = [
                 'date' => $dateString,
-                'formatted_date' => $formattedDate,
+                'formatted_date' => $meta['formatted_date'],
                 'is_notified' => $isNotified,
                 'status_label' => $isNotified ? '通知済み' : '未通知',
                 'timestamp' => $timestampString,
