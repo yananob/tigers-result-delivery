@@ -178,7 +178,7 @@ class YahooScraper
                     $pNodes = $this->xpath->query('.//p', $detailNode);
                     if ($pNodes) {
                         foreach ($pNodes as $pNode) {
-                            $text = trim(preg_replace('/\s+/', ' ', $pNode->nodeValue) ?? '');
+                            $text = $this->cleanText($pNode->nodeValue);
                             if ($text !== '') {
                                 $detailTexts[] = $text;
                             }
@@ -217,7 +217,7 @@ class YahooScraper
                         $dataNode = $this->xpath->query('.//td', $row)->item(0);
                         if ($role && $dataNode) {
                             $roleText = trim($role->nodeValue);
-                            $statsText = trim(preg_replace('/\s+/', ' ', $dataNode->nodeValue) ?? '');
+                            $statsText = $this->cleanText($dataNode->nodeValue);
                             if ($statsText !== '') {
                                 $pitchers[] = "{$roleText}：{$statsText}";
                             }
@@ -252,15 +252,31 @@ class YahooScraper
                         if ($team && $hrItems && $hrItems->length > 0) {
                             $hrTexts = [];
                             foreach ($hrItems as $hrItem) {
-                                $hrTexts[] = trim(preg_replace('/\s+/', ' ', $hrItem->nodeValue) ?? '');
+                                $cleaned = $this->cleanText($hrItem->nodeValue);
+                                if ($cleaned !== '') {
+                                    $hrTexts[] = $cleaned;
+                                }
                             }
-                            $homeRuns[] = trim($team->nodeValue) . "：" . implode(', ', $hrTexts);
+                            if (!empty($hrTexts)) {
+                                $homeRuns[] = trim($team->nodeValue) . "：" . implode(', ', $hrTexts);
+                            }
                         }
                     }
                 }
             }
         }
         return $homeRuns;
+    }
+
+    /**
+     * 余分な空白を除去・正規化する
+     */
+    private function cleanText(?string $text): string
+    {
+        if ($text === null) {
+            return '';
+        }
+        return trim(preg_replace('/\s+/', ' ', $text) ?? '');
     }
 
     private function getXpathForNode(DOMNode $node): DOMXPath

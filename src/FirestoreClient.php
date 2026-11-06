@@ -33,4 +33,15 @@ class FirestoreClient
 
         return self::$instance;
     }
+
+    /**
+     * テスト用またはカスタムの Firestore クライアントを設定
+     *
+     * @param GoogleFirestoreClient|null $client
+     * @return void
+     */
+    public static function setInstance(?GoogleFirestoreClient $client): void
+    {
+        self::$instance = $client;
+    }
 }

@@ -17,10 +17,13 @@ class NpbGameResultService
     private Logger $logger;
     private Client $client;
 
-    public function __construct(?Client $client = null)
-    {
-        $this->scraper = new YahooScraper();
-        $this->aiSummaryService = new AiSummaryService();
+    public function __construct(
+        ?Client $client = null,
+        ?YahooScraper $scraper = null,
+        ?AiSummaryService $aiSummaryService = null
+    ) {
+        $this->scraper = $scraper ?? new YahooScraper();
+        $this->aiSummaryService = $aiSummaryService ?? new AiSummaryService();
         $this->logger = LoggerFactory::getLogger();
         $this->client = $client ?? new Client([
             'timeout' => 10,

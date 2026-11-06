@@ -12,15 +12,21 @@ class AiSummaryService
 {
     private const DEFAULT_MODEL = 'gpt-6-luna';
 
-    private $client;
+    private mixed $client;
     private Logger $logger;
 
-    public function __construct()
+    public function __construct(mixed $client = null)
     {
         $this->logger = LoggerFactory::getLogger();
+        if ($client !== null) {
+            $this->client = $client;
+            return;
+        }
+
         $apiKey = getenv('OPENAI_KEY_SMALL_CF_APPS');
         if (!$apiKey) {
             $this->logger->warning('OPENAI_KEY_SMALL_CF_APPS が設定されていないため、AI 要約はスキップされます');
+            $this->client = null;
             return;
         }
         $this->logger->info('OpenAI クライアントを初期化しました', ['env' => 'OPENAI_KEY_SMALL_CF_APPS']);
@@ -58,10 +64,20 @@ class AiSummaryService
                 ],
             ]);
 
-            $summary = $response->choices[0]->message->content;
+            if (empty($response->choices) || !isset($response->choices[0]->message->content)) {
+                $this->logger->warning('OpenAI API のレスポンスにコンテンツが含まれていません');
+                return null;
+            }
+
+            $summary = trim((string)$response->choices[0]->message->content);
+            if ($summary === '') {
+                $this->logger->warning('OpenAI API から空の要約が返却されました');
+                return null;
+            }
+
             $this->logger->info('AI 要約が完了しました');
-            return trim($summary);
-        } catch (\Exception $e) {
+            return $summary;
+        } catch (\Throwable $e) {
             $this->logger->error('OpenAI API でエラーが発生しました', ['error' => $e->getMessage()]);
             return null;
         }
