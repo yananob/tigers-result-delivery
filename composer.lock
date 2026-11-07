@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "12064fb9e44e127ee790a646efa0d559",
+    "content-hash": "01536f185cb24a8dafa45cdc39c14f70",
     "packages": [
         {
             "name": "brick/math",
@@ -1473,16 +1473,16 @@
         },
         {
             "name": "openai-php/client",
-            "version": "v0.21.0",
+            "version": "v0.22.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/openai-php/client.git",
-                "reference": "ebec896ab0b0dff3917a70d30db67c7a64c548c0"
+                "reference": "23e1da353c02a39be03980ae968fba802cf70555"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/openai-php/client/zipball/ebec896ab0b0dff3917a70d30db67c7a64c548c0",
-                "reference": "ebec896ab0b0dff3917a70d30db67c7a64c548c0",
+                "url": "https://api.github.com/repos/openai-php/client/zipball/23e1da353c02a39be03980ae968fba802cf70555",
+                "reference": "23e1da353c02a39be03980ae968fba802cf70555",
                 "shasum": ""
             },
             "require": {
@@ -1544,7 +1544,7 @@
             ],
             "support": {
                 "issues": "https://github.com/openai-php/client/issues",
-                "source": "https://github.com/openai-php/client/tree/v0.21.0"
+                "source": "https://github.com/openai-php/client/tree/v0.22.0"
             },
             "funding": [
                 {
@@ -1560,7 +1560,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-09-17T11:01:09+00:00"
+            "time": "2026-10-31T15:12:58+00:00"
         },
         {
             "name": "paquettg/php-html-parser",
@@ -3188,11 +3188,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.3.3",
+            "version": "2.3.5",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/4b57dc8ca7456b635d1661845f44bc060b02c6b0",
-                "reference": "4b57dc8ca7456b635d1661845f44bc060b02c6b0",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/645a1bd6bead15fc1b8474137467961d0fa30a79",
+                "reference": "645a1bd6bead15fc1b8474137467961d0fa30a79",
                 "shasum": ""
             },
             "require": {
@@ -3248,7 +3248,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-27T14:06:26+00:00"
+            "time": "2026-11-03T12:14:22+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
