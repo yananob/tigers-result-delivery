@@ -9,7 +9,7 @@
         "guzzlehttp/guzzle": "^7.10",
         "nesbot/carbon": "^3.8",
         "paquettg/php-html-parser": "^2.2",
-        "openai-php/client": "^0.21.0",
+        "openai-php/client": "^0.22.0",
         "http-interop/http-factory-guzzle": "^1.2",
         "monolog/monolog": "^3.10",
         "eftec/bladeone": "^5.0"
